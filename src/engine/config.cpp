@@ -1,0 +1,88 @@
+#include <SDL3/SDL.h>
+#include <stdlib.h>
+#include "global.h"
+#include "../io/io.h"
+#include "config.h"
+
+static const char *CONFIG_DEFAULT = R"([Controls]
+down = S
+up = W
+left = A
+right = D
+escape = ESCAPE
+hplus = J
+hminus = L
+vplus = I
+vminus = K
+)";
+static char tmpBuffer[20] = {0};
+
+static char* config_get_value(const char *config_buffer, const char* value) {
+    
+    const char* line = strstr(config_buffer,value);
+    if(!line)
+	ERROR_EXIT("Could not find config value %s."
+		   "Try deleting 'config.ini' and restarting.\n",value);
+    size_t len  = strlen(line);
+    const char *end = line+len;
+    const char *current = line;
+    char *tmpPointer = &tmpBuffer[0];
+    
+    for(int i =0;i<ArrayCount(tmpBuffer);i++){
+	*(tmpPointer+i) = '\0';
+    }
+    
+    //skip the '='.
+    while(*current != '=' && current != end)
+	++current;
+    ++current;
+    //skip the spaces/newLines too
+    while(*current == ' ')
+	++current;
+    while(*current != '\n' && *current!= 0 &&current != end )
+	*tmpPointer++ = *current++;
+
+    	*(tmpPointer+1) = 0;
+    
+    
+    //finally return pointer to the start of the buffer;;;;
+    return tmpBuffer;};
+
+static void load_controls(const char *config_buffer)
+{
+    config_key_bind(INPUT_KEY_DOWN, config_get_value(config_buffer, "down"));
+    config_key_bind(INPUT_KEY_UP, config_get_value(config_buffer, "up"));
+    config_key_bind(INPUT_KEY_LEFT, config_get_value(config_buffer, "left"));
+    config_key_bind(INPUT_KEY_RIGHT, config_get_value(config_buffer, "right"));
+    config_key_bind(INPUT_KEY_ESCAPE, config_get_value(config_buffer, "escape"));
+    config_key_bind(INPUT_KEY_HPLUS, config_get_value(config_buffer, "hplus"));
+    config_key_bind(INPUT_KEY_HMINUS, config_get_value(config_buffer, "hminus"));
+    config_key_bind(INPUT_KEY_VPLUS, config_get_value(config_buffer, "vplus"));
+    config_key_bind(INPUT_KEY_VMINUS, config_get_value(config_buffer, "vminus"));
+   
+}
+static bool32 config_load(void) {
+    File file_config = ioFileRead("./config.ini");
+    if(!file_config.is_valid)
+	return FAIL;
+    load_controls(file_config.data);
+    free(file_config.data);
+    return SUCCESS;
+};
+
+void config_init(void) {
+    //attempt to load the config file
+    //if fail, we attempt to use default bindings
+    if(config_load() == SUCCESS)
+	return;
+    ioFileWrite((void*) CONFIG_DEFAULT, strlen(CONFIG_DEFAULT), "./config.ini");
+    //if it still fail to load we exit the program 
+    if(config_load() == FALSE)
+	ERROR_EXIT("Could not load the config file. \n")
+	    };
+void config_key_bind(Input_Key key, const char *key_name) {
+    SDL_Scancode scanCode = SDL_GetScancodeFromName(key_name);
+    if(scanCode == SDL_SCANCODE_UNKNOWN)
+	ERROR_RETURN(,"Invalid scan code while binding key: %s\n" , key_name)
+    global.config.keybinds[key] = scanCode;
+};

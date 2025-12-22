@@ -1,0 +1,28 @@
+* FYP1
+** Title - 10%
+** Introduction - 80% (The rest of the report is 10%) - 1.5 to 2 pages
+*** Current situation
+*** The solution - can be a little idealistic
+*** In this FYP, what will be achieved - under promise, hopefully over deliver
+** Literature Review
+*** Related products
+*** Related technologies - to explain why a technology or a platform is chosen
+*** My FYP when compared in a table of comparison - to make it easy to read
+** Analysis
+*** Use case diagram
+** Design
+*** Procedural
+**** Data flow and data model
+***** DFD, ERD, Relational model, JSON model, text file format, structs
+**** Programs
+***** Flowcharts, pseudo codes
+*** OOP
+**** Class diagram
+**** Sequence diagram
+**** Activity diagram
+*** Screen design - almost like prototyping
+** Implementation Plan
+*** Two trimester - 14 weeks + [4 weeks] + 14 weeks --> 10 weeks + 2 weeks + 10 weeks
+** Conclusion
+*** What you have achieved
+*** Before you ask, this is my answer.

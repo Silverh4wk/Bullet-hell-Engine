@@ -1,0 +1,15 @@
+CompileFlags:
+  Add: [
+    "-I", "i:/FYP/include",
+    "-I", "i:/FYP/include/glad",
+    "-I", "i:/FYP/include/SDL3",
+    "-I", "C:/Program Files/LLVM/lib/clang/20/include",
+    "-I", "C:/PROGRA~2/IBM/SQLLIB/INCLUDE",
+    "-I", "C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/winrt",
+    "-I", "C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt",
+    "-I", "C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/um",
+    "-I", "C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/shared",
+    "-I", "C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/cppwinrt",
+    "-I", "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/include",
+    "-I", "C:/msys64/mingw64/include"
+  ]

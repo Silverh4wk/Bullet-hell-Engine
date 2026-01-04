@@ -14,6 +14,7 @@ hplus = J
 hminus = L
 vplus = I
 vminus = K
+toggle = P
 )";
 static char tmpBuffer[20] = {0};
 
@@ -59,25 +60,26 @@ static void load_controls(const char *config_buffer)
     config_key_bind(INPUT_KEY_HMINUS, config_get_value(config_buffer, "hminus"));
     config_key_bind(INPUT_KEY_VPLUS, config_get_value(config_buffer, "vplus"));
     config_key_bind(INPUT_KEY_VMINUS, config_get_value(config_buffer, "vminus"));
+    config_key_bind(INPUT_KEY_TOGGLE, config_get_value(config_buffer, "toggle"));
    
 }
 static bool32 config_load(void) {
     File file_config = ioFileRead("./config.ini");
     if(!file_config.is_valid)
-	return FAIL;
+	return 0;
     load_controls(file_config.data);
     free(file_config.data);
-    return SUCCESS;
+    return 1;
 };
 
 void config_init(void) {
     //attempt to load the config file
     //if fail, we attempt to use default bindings
-    if(config_load() == SUCCESS)
+    if(config_load() == 1)
 	return;
     ioFileWrite((void*) CONFIG_DEFAULT, strlen(CONFIG_DEFAULT), "./config.ini");
     //if it still fail to load we exit the program 
-    if(config_load() == FALSE)
+    if(config_load() == 0)
 	ERROR_EXIT("Could not load the config file. \n")
 	    };
 void config_key_bind(Input_Key key, const char *key_name) {

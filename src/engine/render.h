@@ -5,6 +5,8 @@
 #include "../helpers.h"
 
 #include "../objects/shapes.h"
+#include "../engine/physics.h"
+
 typedef struct Render_State
 {
     SDL_Window *window;
@@ -19,4 +21,5 @@ void renderBegin(void);
 void renderEnd(void);
 void renderQuad(Quad quad);
 void renderQuad(vec2 pos, vec2 size, vec4 color);
-
+void renderAABB(AABB *aabb, vec4 color);
+void drawAllAABB(void);

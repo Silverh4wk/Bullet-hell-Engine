@@ -15,10 +15,6 @@ void setQuad(Quad *quad ,vec2 pos, vec2 size, vec4 color);
 
 #define global_variable static
 
-#define FALSE 0
-#define FAIL 0
-#define TRUE !(FALSE)
-#define SUCCESS !(FAIL)
 
 #define Pi32 3.14159265359f
 #define ArrayCount(Array) (sizeof(Array)/sizeof(Array[0]))

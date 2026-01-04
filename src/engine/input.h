@@ -10,7 +10,8 @@ typedef enum Input_Key {
     INPUT_KEY_VPLUS,
     INPUT_KEY_VMINUS,
     INPUT_KEY_ESCAPE,
-    INPUT_KEY_RETURN
+    INPUT_KEY_RETURN,
+    INPUT_KEY_TOGGLE
 } Input_Key;
 
 typedef enum Key_State {
@@ -28,7 +29,7 @@ typedef struct Input_State {
     Key_State hplus;
     Key_State vminus;
     Key_State vplus;
- 
+    Key_State toggle;
     Key_State escape;
     Key_State _return;
     

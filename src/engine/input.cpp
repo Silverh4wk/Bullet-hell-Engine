@@ -29,5 +29,6 @@ void input_update(void) {
     update_key_state(keyboard_state[global.config.keybinds[INPUT_KEY_VMINUS]], &global.input.vminus);
     update_key_state(keyboard_state[global.config.keybinds[INPUT_KEY_ESCAPE]],&global.input.escape);
     update_key_state(keyboard_state[global.config.keybinds[INPUT_KEY_RETURN]],&global.input._return);
+    update_key_state(keyboard_state[global.config.keybinds[INPUT_KEY_TOGGLE]],&global.input.toggle);
 
 };

@@ -9,6 +9,7 @@
 #include "keyboardTable.h"
 
 #include "engine/render.h"
+#include "math.h"
 #include "objects/shapes.h"
 
 #include "engine/global.h"
@@ -23,6 +24,7 @@
 
 global_variable SDL_Joystick * joystick = NULL;
 
+global_variable int toggleHitBoxVisual = 0;
 
 enum EngineState {
     STATE_MENU,
@@ -43,7 +45,7 @@ global_variable EngineState currentState = STATE_MENU;
 // ==== Global Variables ====
 //
 
-global_variable bool GlobalRunning = FALSE; // The state of the application
+global_variable bool GlobalRunning = 0; // The state of the application
 global_variable SDL_Color colors[64];
 
 global_variable vec2 pos;
@@ -64,6 +66,12 @@ static void input_handle(void) {
     {
 	pos [1] += 500* global.time.delta;
     	printf("W \n");
+    }
+    if (global.input.toggle == KEY_PRESSED)
+    {
+	
+	toggleHitBoxVisual = !toggleHitBoxVisual;
+    	printf("P \n");
     }
     
     if (global.input.down == KEY_PRESSED || global.input.down == KEY_HELD)
@@ -94,7 +102,7 @@ static void input_handle(void) {
      if (global.input.escape == KEY_PRESSED || global.input.escape == KEY_HELD)
      {
 	printf("program terminated... \n");
-	GlobalRunning = FALSE;
+	GlobalRunning = 0;
     }
 }
 
@@ -113,7 +121,7 @@ void Terminate();
 int main(int argc, char *argv[])
 {
     //reminder to untie the engine to the fps (is set to 60 for now)
-    time_init(60);
+    time_init(90);
     config_init();
     SDL_Event event;
     renderInit();
@@ -137,24 +145,22 @@ int main(int argc, char *argv[])
 	    body->acceleration[0] = rand() % 200 - 100;
 	    body->acceleration[1] = rand() % 200 - 100;
  }
-	
+		 
     Quad quad1;
     pos[0] = global.render.width * 0.5f;
-    pos[1] = global.render.height * 0.5f;
+    pos[1] = global.render.height * 0.25f;
     qsize[0] =  global.render.height * 0.05;
     qsize[1] =  global.render.width * 0.05f;
-    vec2 testSize = {20,20};
+    vec2 testSize = {50,50};
     vec4 testColor = {0,1,0,1};
-    QuadCreate(&quad1,
-		   pos[0],pos[1],
-		   10, 10 ,
-		   1, 0, 0.3, 0.3) ;
-
     
+    QuadCreate(&quad1,qsize, pos,testColor);
+    // quad1->body->aabb.radius[0] =sqrt(pow(quad1->body->aabb.half_size[0],2) + pow(quad1->body->aabb.half_size[1],2)) ;
+    //quad1->body->aabb.radius[1] = quad1->body->aabb.radius[0];
     int i;
     
  
-    GlobalRunning = TRUE;
+    GlobalRunning = 1;
 
     const char *screenText = "Plug in a joystick, please.";
     // SDL_SetRenderDrawColor(global.render.renderer, 0, 0, 0, 255);
@@ -184,7 +190,7 @@ int main(int argc, char *argv[])
 	//    }
 	
 	QuadMove(&quad1, pos[0], pos[1]);
-	QuadChangeSize(&quad1, qsize[0],qsize[1]);
+	//QuadChangeSize(&quad1, qsize[0],qsize[1]);
 	while (SDL_PollEvent(&event)) {
 	    if (event.type == SDL_EVENT_QUIT) {
 		GlobalRunning = false;
@@ -194,30 +200,38 @@ int main(int argc, char *argv[])
 	input_handle();
 	physicsUpdate();
 	renderBegin();
-    
-	renderQuad(quad1);
+	if(toggleHitBoxVisual)
+	    drawAllAABB();
+	renderQuad(quad1.pos,quad1.size,quad1.color);
+	
 	for(int x = 0; x <body_count;++x)
 	{
 	    Body *body = physicsBodyGet(x);
-	    renderQuad(body->aabb.position,body->aabb.half_size,body->aabb.color);
+	    
+	    renderQuad(body->aabb.position,body->aabb.half_size,body->color);
 
 	    //wall and ceiling bounce
-	    if (body->aabb.position[0] > global.render.width || body->aabb.position[0] < 0)
+	     if (body->aabb.position[0] > global.render.width || body->aabb.position[0] < 0)
 	    {body->velocity[0] *= -2;
 		//	setVec4(&body->color,testrand,testrand,testrand, testrand);
 	    }
-	    if (body->aabb.position [1] > global.render.height || body->aabb.position[1] < 0)
-		body->velocity[1] *= -2;
+	      if (body->aabb.position [1] > global.render.height || body->aabb.position[1] < 0)
+		  body->velocity[1] *= -2;
+	    //if(testAABBAABB(quad1.body->aabb,body->aabb))
+	    //{setVec4(&body->color,1.f,1.f,0.f,1.f);}
+	    // else
+	    //	setVec4(&body->color,2.f,0.f,1.f,0.f);
 	    
-	    // if (body->velocity [0] > 500)
-	    // 	body->velocity[0] = 500;
-	    // if (body->velocity [0] < -500)
-	    // 	body->velocity[0] = -500;
-	    // if (body->velocity [1] > 500)
-	    // 	body->velocity[1] = 500;
-	    // if (body->velocity [1] < -500)
-	    // 	body->velocity[1] = -500;
+	    if (body->velocity [0] > 500)
+		body->velocity[0] = 500;
+	    if (body->velocity [0] < -500)
+		body->velocity[0] = -500;
+	    if (body->velocity [1] > 500)
+		body->velocity[1] = 500;
+	    if (body->velocity [1] < -500)
+		body->velocity[1] = -500;
 	}
+	
 	renderEnd();
 	time_update_late();
     }
@@ -255,14 +269,14 @@ void MenuScene(void) {
 
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_EVENT_QUIT) {
-            GlobalRunning = FALSE;
+            GlobalRunning = 0;
         } else if (event.type == SDL_EVENT_KEY_DOWN) {
             // FIXED: check actual SDL key symbols
             if (event.key.key == Return) {
                 currentState = STATE_JOYSTICK_TEST;
                 return;
             } else if (event.key.key == Escape) {
-                GlobalRunning = FALSE;
+                GlobalRunning = 0;
                 return;
             }
         }
@@ -284,7 +298,7 @@ void JoystickScene(void) {
     
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_EVENT_QUIT) {
-            GlobalRunning = FALSE;
+            GlobalRunning = 0;
         } else if (event.type == SDL_EVENT_KEY_DOWN && event.key.key == Escape) {
             currentState = STATE_MENU;
             return;

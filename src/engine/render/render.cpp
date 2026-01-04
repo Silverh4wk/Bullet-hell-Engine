@@ -102,3 +102,42 @@ void renderQuad(vec2 pos, vec2 size, vec4 color) {
     
     glBindVertexArray(0);
 };
+
+void renderAABB(AABB* aabb, vec4 color) {
+    if (!aabb) return;
+
+    glUseProgram(state.shader_default);
+
+    //  full size from half_size
+    float w = aabb->half_size[0] * 2.0f;
+    float h = aabb->half_size[1] * 2.0f;
+
+    mat4x4 model;
+    mat4x4_identity(model);
+    mat4x4_translate(model, aabb->position[0], aabb->position[1], 0);
+    mat4x4_scale_aniso(model, model, w, h, 1);
+
+    glUniformMatrix4fv(glGetUniformLocation(state.shader_default, "model"),
+                       1, GL_FALSE, &model[0][0]);
+    glUniform4fv(glGetUniformLocation(state.shader_default, "color"), 1, color);
+
+    glBindVertexArray(state.vao_quad);
+    glBindTexture(GL_TEXTURE_2D, state.texture_color);
+
+    // draw the outline of the quad using GL_LINE 
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+    glBindVertexArray(0);
+}
+
+void drawAllAABB(void) {
+    size_t count = physicsGetBodyCount();
+    vec4 wireColor = {1,0,0,1};
+    for (size_t i = 0; i < count; i++) {
+        Body* body = physicsGetBody(i);
+	renderAABB(&body->aabb,wireColor);
+        
+    }
+}

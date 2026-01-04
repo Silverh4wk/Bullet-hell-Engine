@@ -4,7 +4,7 @@
 #include <SDL3/SDL.h>
 
 typedef struct Config_State {
-    SDL_Scancode keybinds[10];
+    SDL_Scancode keybinds[11];
 
 } Config_State;
 

@@ -5,6 +5,7 @@
 #include "SDL3/SDL.h"
 #include <stdio.h>
 #include <iostream>
+#include "stdlib.h"
 
 #include "keyboardTable.h"
 
@@ -17,14 +18,12 @@
 #include "engine/input.h"
 #include "engine/time.h"
 #include "engine/physics.h"
-#include "stdlib.h"
+#include "engine/spatial_hashing.h"
 
 
 
 
-global_variable SDL_Joystick * joystick = NULL;
 
-global_variable int toggleHitBoxVisual = 0;
 
 enum EngineState {
     STATE_MENU,
@@ -35,8 +34,6 @@ enum EngineState {
     // future me focus on that pls
 };
 
-//the init state
-global_variable EngineState currentState = STATE_MENU;
 
 // ==== Error Codes ====
 //
@@ -47,10 +44,19 @@ global_variable EngineState currentState = STATE_MENU;
 
 global_variable bool GlobalRunning = 0; // The state of the application
 global_variable SDL_Color colors[64];
+//the init state
+global_variable EngineState currentState = STATE_MENU;
+
+global_variable SDL_Joystick * joystick = NULL;
+
+global_variable int toggleHitBoxVisual = 0;
 
 global_variable vec2 pos;
 global_variable vec2 qsize;
 
+global_variable SpatialHash* gSpatialHash = NULL;
+
+//MOVE THIS 
 static void input_handle(void) {
     if (global.input.left == KEY_PRESSED || global.input.left == KEY_HELD)
     {
@@ -126,18 +132,17 @@ int main(int argc, char *argv[])
     SDL_Event event;
     renderInit();
     physicsInit();
-
-    int body_count = pow(2.f,8.f);
+    gSpatialHash = spatialHashCreate();
+    int body_count = pow(2.f,12.f);
     
 #define testrand (float)rand()/RAND_MAX
     
 	for (int i = 0; i < body_count; ++i)
 	{
 	      size_t body_index = physicsBodyCreate(
-		  vec2{static_cast<float>((rand() % (int)global.render.width)), 
+		  vec2{(float)((rand() % (int)global.render.width)), 
 		     (float)(rand() % (int)global.render.height) },
-		 vec2{5, 
-		      5 },
+		 vec2{15,15},
 		  vec4{testrand,testrand,testrand,testrand}
 		);
 
@@ -155,8 +160,6 @@ int main(int argc, char *argv[])
     vec4 testColor = {0,1,0,1};
     
     QuadCreate(&quad1,qsize, pos,testColor);
-    // quad1->body->aabb.radius[0] =sqrt(pow(quad1->body->aabb.half_size[0],2) + pow(quad1->body->aabb.half_size[1],2)) ;
-    //quad1->body->aabb.radius[1] = quad1->body->aabb.radius[0];
     int i;
     
  
@@ -196,31 +199,46 @@ int main(int argc, char *argv[])
 		GlobalRunning = false;
 	    } 
 	}
+	//move the definition of this at some point
 	input_update();
+       
 	input_handle();
 	physicsUpdate();
-	renderBegin();
-	if(toggleHitBoxVisual)
-	    drawAllAABB();
-	renderQuad(quad1.pos,quad1.size,quad1.color);
+//rendering block begin
+        renderBegin();
+
 	
-	for(int x = 0; x <body_count;++x)
+	QuadSetSize(&quad1, qsize[0], qsize[1]);
+	
+       QuadSetHitBoxSize(&quad1, qsize[0], qsize[1]);
+	
+       spatialHashClear(gSpatialHash);
+
+        for(int x = 0; x <body_count;++x)
 	{
 	    Body *body = physicsBodyGet(x);
-	    
-	    renderQuad(body->aabb.position,body->aabb.half_size,body->color);
 
+	    spatialHashInsert(gSpatialHash, body); 
+	    renderQuad(body->aabb.position,body->aabb.half_size,body->color);
+	    
 	    //wall and ceiling bounce
+
 	     if (body->aabb.position[0] > global.render.width || body->aabb.position[0] < 0)
-	    {body->velocity[0] *= -2;
-		//	setVec4(&body->color,testrand,testrand,testrand, testrand);
-	    }
-	      if (body->aabb.position [1] > global.render.height || body->aabb.position[1] < 0)
-		  body->velocity[1] *= -2;
-	    //if(testAABBAABB(quad1.body->aabb,body->aabb))
-	    //{setVec4(&body->color,1.f,1.f,0.f,1.f);}
+	     	 body->velocity[0] *= -2;
+	     
+	     if (body->aabb.position [1] > global.render.height || body->aabb.position[1] < 0)
+		 body->velocity[1] *= -2;
+	      
+    
+	    //   //aabb test scenario
+	    // if(testAABBAABB(&quad1.body->aabb,&body->aabb))
+	    // {
+	    // 	setVec4(&quad1.color,1.f,1.f,0.f,1.f);
+	    // 	printf("\n collided");
+	    // }
 	    // else
-	    //	setVec4(&body->color,2.f,0.f,1.f,0.f);
+	    // 	setVec4(&quad1.color,2.f,0.f,1.f,0.f);
+	  
 	    
 	    if (body->velocity [0] > 500)
 		body->velocity[0] = 500;
@@ -231,8 +249,37 @@ int main(int argc, char *argv[])
 	    if (body->velocity [1] < -500)
 		body->velocity[1] = -500;
 	}
+
+        Array_List* candidates = arrayListCreate(sizeof(Body*), 16);
 	
+        setVec4(&quad1.color, 0.f, 1.f, 0.f, 1.f);
+
+	spatialHashQuery(
+	    gSpatialHash,
+	    quad1.body->aabb.position,
+	    quad1.body->aabb.half_size[0],
+	    candidates
+	    );
+
+        for (size_t i = 0; i < candidates->len; ++i)
+	{
+	    Body* body = *(Body**)arrayListGet(candidates, i);
+
+	    if (testAABBAABB(&quad1.body->aabb, &body->aabb))
+	    {
+		setVec4(&quad1.color, 1.f, 1.f, 0.f, 1.f);
+	    }
+	    else
+		setVec4(&quad1.color,2.f,0.f,1.f,0.f);
+	  
+	}
+	arrayListDestroy(candidates);
+        renderQuad(quad1.pos,quad1.size,quad1.color);
+	
+	if(toggleHitBoxVisual)
+	    drawAllAABB();
 	renderEnd();
+	//rendering block end
 	time_update_late();
     }
     
@@ -245,6 +292,11 @@ void Terminate() {
     //release controllers (if any)
     if (joystick) {
         SDL_CloseJoystick(joystick);
+    }
+    
+    if (gSpatialHash) {
+	spatialHashDestroy(gSpatialHash);
+    gSpatialHash = NULL;
     }
     // Quit
     SDL_DestroyWindow( global.render.window);

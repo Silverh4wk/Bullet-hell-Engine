@@ -103,4 +103,8 @@ void QuadSetColor(Quad *quad, real32 c1, real32 c2, real32 c3, real32 c4) {
     setVec4(&quad->color,c1,c2,c3,c4);    
 }
 
+void QuadSetHitBoxSize(Quad *quad, real32 width, real32 height)
+{
+     setVec2(&quad->body->aabb.half_size,width/2,height/2);    
+}
 

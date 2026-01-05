@@ -6,8 +6,6 @@
 typedef struct AABB
 {
     vec2 position;
-    vec2 center;
-    vec2  radius;
     vec2 half_size;
     int toggle;
 }AABB;
@@ -31,6 +29,6 @@ Body *physicsBodyGet(size_t index);
 size_t physicsGetBodyCount(void);
 Body* physicsGetBody(size_t i);
 
-int testAABBAABB(AABB a, AABB b);
+int testAABBAABB(AABB* a, AABB* b);
 
 void physicsToggleAllHitBoxes(void);

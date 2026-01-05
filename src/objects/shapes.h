@@ -31,9 +31,9 @@ Quad_Result QuadCreate(Quad *quad ,vec2 size, vec2 pos,vec4 colors) ;
     
 void QuadMove(Quad *quad, real32 posx, real32 posy);
 
-void QuadSetSize(Quad *quad, real32 posx, real32 posy);
+void QuadSetSize(Quad *quad, real32 width, real32 height);
 
-void QuadSetHitBoxSize(Quad *quad, real32 posx, real32 posy);
+void QuadSetHitBoxSize(Quad *quad, real32 width, real32 height);
 
 void QuadSetColor(Quad *quad, real32 c1, real32 c2, real32 c3, real32 c4) ;
 

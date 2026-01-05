@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "../../helpers.h"
 
-Array_List *array_list_create(size_t item_size, size_t init_capacity)
+Array_List *arrayListCreate(size_t item_size, size_t init_capacity)
     {
 	Array_List* list =  (Array_List*) calloc(1,sizeof(Array_List));
 	
@@ -18,7 +18,7 @@ Array_List *array_list_create(size_t item_size, size_t init_capacity)
 
         return list;
     }
-    size_t array_list_append(Array_List *list, void *item)
+    size_t arrayListAppend(Array_List *list, void *item)
     {
 	if(list->len == list->capacity)
 	{
@@ -32,7 +32,7 @@ Array_List *array_list_create(size_t item_size, size_t init_capacity)
 	memcpy((uint8*)list->items + index * list->item_size, item ,list->item_size);
 	return index;
     }
-    void *array_list_get(Array_List *list, size_t index)
+    void *arrayListGet(Array_List *list, size_t index)
     {
 	if(index>=list->len)
 	    ERROR_RETURN(NULL, "Index out of bound \n");
@@ -42,7 +42,7 @@ Array_List *array_list_create(size_t item_size, size_t init_capacity)
 //out of order remove
 //copy the last item into the spot of the item to be removed then
 // reduce the index by one
-    uint8 array_list_remove(Array_List *list, size_t index)
+    uint8 arrayListRemove(Array_List *list, size_t index)
     {
 	if(list->len == 0)
 	    ERROR_RETURN(1, "List is already empty\n");
@@ -62,3 +62,11 @@ Array_List *array_list_create(size_t item_size, size_t init_capacity)
 
 	return 0;
     }
+
+
+void arrayListDestroy(Array_List *list)
+{
+    if(!list) return;
+    free(list->items);  
+    free(list);      
+}

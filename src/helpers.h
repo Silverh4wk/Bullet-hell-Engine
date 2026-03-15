@@ -1,17 +1,19 @@
-#pragma once
+#ifndef HELPERS_H
+#define HELPERS_H
 
-#include <stdio.h>
 #include <linmath.h>
+#include <stdio.h>
 #include "types.h"
 
 
-typedef struct Quad Quad;
+
+struct Quad;
 
 int32 pseudoRand(int32 n);
 void setVec2(vec2 *a, real32 x, real32 y);
 void setVec3(vec3 *a, real32 x, real32 y, real32 z);
 void setVec4(vec4 *a, real32 x, real32 y, real32 z, real32 l);
-void setQuad(Quad *quad ,vec2 pos, vec2 size, vec4 color);
+void setQuad(struct Quad *quad ,vec2 pos, vec2 size, vec4 *color);
 
 #define global_variable static
 
@@ -32,3 +34,4 @@ void setQuad(Quad *quad ,vec2 pos, vec2 size, vec4 color);
 
 
 
+#endif

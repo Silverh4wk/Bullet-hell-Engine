@@ -1,34 +1,48 @@
-#pragma once
-#include "linmath.h"
-#include<stdlib.h>
-#include "../types.h"
-//will be using basic aabb test
-typedef struct AABB
-{
-    vec2 position;
-    vec2 half_size;
-    int toggle;
-}AABB;
+#ifndef PHYSICS_H
+#define PHYSICS_H
 
-typedef struct Body
+#include "aabb.h"
+
+
+
+// struct that hold the physical "body" or state of an object
+
+struct Body
 {
     AABB aabb;
     vec2 velocity;
     vec2 acceleration;
     vec4 color;
-    
-} Body;
+};
 
 void physicsInit(void);
 
 void physicsUpdate(void);
 
-size_t physicsBodyCreate(vec2 pos, vec2 size, vec4 color);
+size_t physicsBodyCreate(vec2 pos, vec2 size);
 
-Body *physicsBodyGet(size_t index);
-size_t physicsGetBodyCount(void);
-Body* physicsGetBody(size_t i);
+struct Body *
+physicsBodyGet(size_t index);
 
-int testAABBAABB(AABB* a, AABB* b);
+size_t
+physicsGetBodyCount(void);
 
-void physicsToggleAllHitBoxes(void);
+struct Body*
+physicsGetBody(size_t i);
+
+int
+testAABBAABB(AABB* a, AABB* b);
+
+void
+physicsToggleAllHitBoxes(void);
+
+void
+physicsBodyDestroyByIndex(size_t index);
+
+void
+physicsBodyDestroyByPtr(struct Body *body);
+
+void
+physicsClearBodies(void);
+
+#endif

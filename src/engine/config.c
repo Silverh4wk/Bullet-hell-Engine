@@ -1,23 +1,24 @@
-#include <SDL3/SDL.h>
-#include <stdlib.h>
 #include "global.h"
 #include "../io/io.h"
 #include "config.h"
 
-static const char *CONFIG_DEFAULT = R"([Controls]
-down = S
-up = W
-left = A
-right = D
-escape = ESCAPE
-hplus = J
-hminus = L
-vplus = I
-vminus = K
-toggle = P
-)";
+
+static const char CONFIG_DEFAULT[] =
+"[Controls]\n"
+"down = S\n"
+"up = W\n"
+"left = A\n"
+"right = D\n"
+"escape = ESCAPE\n"
+"hplus = J\n"
+"hminus = L\n"
+"vplus = I\n"
+"vminus = K\n"
+"toggle = P\n";
+
 static char tmpBuffer[20] = {0};
 
+//Internal function to get the configuration entry from a buffer
 static char* config_get_value(const char *config_buffer, const char* value) {
     
     const char* line = strstr(config_buffer,value);
@@ -46,9 +47,11 @@ static char* config_get_value(const char *config_buffer, const char* value) {
     	*(tmpPointer+1) = 0;
     
     
-    //finally return pointer to the start of the buffer;;;;
+    //finally return pointer to the start of the buffer
     return tmpBuffer;};
 
+// internal function that binds keys
+// binds them specifically to what is in the config file and the sdl code and i really do need a better way to do this
 static void load_controls(const char *config_buffer)
 {
     config_key_bind(INPUT_KEY_DOWN, config_get_value(config_buffer, "down"));
@@ -61,10 +64,11 @@ static void load_controls(const char *config_buffer)
     config_key_bind(INPUT_KEY_VPLUS, config_get_value(config_buffer, "vplus"));
     config_key_bind(INPUT_KEY_VMINUS, config_get_value(config_buffer, "vminus"));
     config_key_bind(INPUT_KEY_TOGGLE, config_get_value(config_buffer, "toggle"));
-   
 }
+
+//fetch the configuration file and loaded it
 static bool32 config_load(void) {
-    File file_config = ioFileRead("./config.ini");
+    struct File_S file_config = ioFileRead("./config.ini");
     if(!file_config.is_valid)
 	return 0;
     load_controls(file_config.data);
@@ -81,10 +85,12 @@ void config_init(void) {
     //if it still fail to load we exit the program 
     if(config_load() == 0)
 	ERROR_EXIT("Could not load the config file. \n")
-	    };
+};
+
+            
 void config_key_bind(Input_Key key, const char *key_name) {
     SDL_Scancode scanCode = SDL_GetScancodeFromName(key_name);
     if(scanCode == SDL_SCANCODE_UNKNOWN)
 	ERROR_RETURN(,"Invalid scan code while binding key: %s\n" , key_name)
-    global.config.keybinds[key] = scanCode;
+	    global.config.keybinds[key] = scanCode;
 };

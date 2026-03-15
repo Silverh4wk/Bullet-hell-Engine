@@ -11,7 +11,8 @@
 #include "render_internal.h"
 
 
-SDL_Window *renderInitWindow(int width, int height) {
+SDL_Window *
+renderInitWindow(int width, int height) {
 
     int i ;
     float x, y;
@@ -43,9 +44,9 @@ SDL_Window *renderInitWindow(int width, int height) {
 
 
 
-    // 1. bind Vertex Array Object
-    // 2. copy our vertices array in a buffer for OpenGL to use
-    // 3. then set our vertex attributes pointers
+// 1. bind Vertex Array Object
+// 2. copy our vertices array in a buffer for OpenGL to use
+// 3. then set our vertex attributes pointers
 void renderInitQuad(uint32 *vao, uint32 *vbo, uint32 *ebo) {
 
     real32 vertices[] =
@@ -55,10 +56,10 @@ void renderInitQuad(uint32 *vao, uint32 *vbo, uint32 *ebo) {
 	    // but here we trying to make it use the center of the screen
 	    // so each vertics is  gonna sit at 0.5
             //x     y   z  u  v
-	     0.5,  0.5, 1, 0, 0, 
-	     0.5, -0.5, 0, 1, 0, 
-	    -0.5, -0.5, 0, 0, 1, 
-	    -0.5,  0.5, 1, 0, 0 
+	    0.5,  0.5, 0, 0, 0, 
+	    0.5, -0.5, 0, 0, 0, 
+	    -0.5, -0.5, 0, 0, 0, 
+	    -0.5,  0.5, 0, 0, 0 
 	};
 
     // a quad is just two triangles
@@ -109,14 +110,15 @@ void renderInitQuad(uint32 *vao, uint32 *vbo, uint32 *ebo) {
 
 
 void renderInitColorTexture(uint32 *texture)
-    {
-	glGenTextures(1,texture);
-	glad_glBindTexture(GL_TEXTURE_2D,*texture);
-	uint8 white[4] = {255,255,255,255};
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1,1,0, GL_RGBA, GL_UNSIGNED_BYTE, white);
-	glBindTexture(0,GL_TEXTURE_2D);
-    };
-void renderInitShaders(Render_State_Internal *state){
+{
+    glGenTextures(1,texture);
+    glad_glBindTexture(GL_TEXTURE_2D,*texture);
+    uint8 white[4] = {255,255,255,255};
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1,1,0, GL_RGBA, GL_UNSIGNED_BYTE, white);
+    glBindTexture(0,GL_TEXTURE_2D);
+};
+//reminder to do something abt this
+void renderInitShaders(struct RenderStateInternal *state){
     state->shader_default = renderShaderCreate("I:/FYP/src/shaders/default.vert",
 					       "I:/FYP/src/shaders/default.frag");
     mat4x4_ortho(state->projection, 0, global.render.width, 0, global.render.height,-2, 2);

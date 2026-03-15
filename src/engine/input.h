@@ -1,4 +1,5 @@
-#pragma once
+#ifndef INPUT_H
+#define INPUT_H
 
 typedef enum Input_Key {
     INPUT_KEY_DOWN,
@@ -36,3 +37,5 @@ typedef struct Input_State {
 }Input_State;
 
 void input_update(void);
+
+#endif

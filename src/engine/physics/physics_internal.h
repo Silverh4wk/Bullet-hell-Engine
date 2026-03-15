@@ -1,9 +1,12 @@
-#pragma once
+#ifndef PHYSICS_INTERNAL_H
+#define PHYSICS_INTERNAL_H
 
 #include "../array_list.h"
 #include "../../types.h"
 
-typedef struct PhysicsStateInternal
+ struct PhysicsStateInternal
 {
-    Array_List* body_list;
-} PhysicsStateInternal;
+    struct Array_List* body_list;
+} ;
+
+#endif

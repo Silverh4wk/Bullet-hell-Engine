@@ -1,12 +1,26 @@
-#pragma once
+#ifndef CONFIG_H
+#define CONFIG_H
+
 #include "../helpers.h"
 #include "input.h"
 #include <SDL3/SDL.h>
 
-typedef struct Config_State {
+
+struct Config_State {
     SDL_Scancode keybinds[11];
 
-} Config_State;
+} ;
 
-void config_init(void);
-void config_key_bind(Input_Key key, const char *key_name);
+// Initiate the engine configurations
+// including :
+// the rendering device config (TODO)
+// sound config (TODO)
+// input config (TODO)
+void
+config_init(void);
+
+// binds a given key to its SDL scan code
+void
+config_key_bind(Input_Key key, const char *key_name);
+
+#endif 

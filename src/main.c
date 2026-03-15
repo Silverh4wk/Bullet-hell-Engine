@@ -4,7 +4,6 @@
 
 #include "SDL3/SDL.h"
 #include <stdio.h>
-#include <iostream>
 #include "stdlib.h"
 
 #include "keyboardTable.h"
@@ -18,12 +17,28 @@
 #include "engine/input.h"
 #include "engine/time.h"
 #include "engine/physics.h"
-#include "engine/spatial_hashing.h"
+#include "engine/physics/spatial_hashing.h"
 
 
 
 
+static float fps_timer = 0.0f;
+static int   fps_frames = 0;
+static float fps_value = 0.0f;
 
+void fpsUpdate(void)
+{
+    fps_timer += global.time.delta;
+    fps_frames++;
+
+    if (fps_timer >= 1.0f)
+    {
+        fps_value = (float)fps_frames / fps_timer;
+
+        fps_frames = 0;
+        fps_timer = 0.0f;
+    }
+}
 
 enum EngineState {
     STATE_MENU,
@@ -42,21 +57,22 @@ enum EngineState {
 // ==== Global Variables ====
 //
 
-global_variable bool GlobalRunning = 0; // The state of the application
+global_variable bool GlobalRunning = 0; // The state of the engine
 global_variable SDL_Color colors[64];
+
 //the init state
-global_variable EngineState currentState = STATE_MENU;
+global_variable enum EngineState currentState = STATE_MENU;
 
 global_variable SDL_Joystick * joystick = NULL;
 
+// for testing purposes
 global_variable int toggleHitBoxVisual = 0;
 
 global_variable vec2 pos;
 global_variable vec2 qsize;
 
-global_variable SpatialHash* gSpatialHash = NULL;
 
-//MOVE THIS 
+//MOVE THIS (soon just wait) 
 static void input_handle(void) {
     if (global.input.left == KEY_PRESSED || global.input.left == KEY_HELD)
     {
@@ -113,9 +129,15 @@ static void input_handle(void) {
 }
 
 // ==========================
+// (TODO) a proper scene setup
+// (TODO) a general game intro screen,
+// One with, start level, load level, configs and exit
+
 void MenuScene(void);
+
 void JoystickScene(void);
 
+// kill everything
 void Terminate();
 
 // ===  Main Window call back ===
@@ -123,63 +145,39 @@ void Terminate();
 // Processing of messages that are sent to the window
 //
 //
-
 int main(int argc, char *argv[])
 {
-    //reminder to untie the engine to the fps (is set to 60 for now)
-    time_init(90);
-    config_init();
-    SDL_Event event;
-    renderInit();
-    physicsInit();
-    gSpatialHash = spatialHashCreate();
-    int body_count = pow(2.f,12.f);
     
-#define testrand (float)rand()/RAND_MAX
     
-	for (int i = 0; i < body_count; ++i)
-	{
-	      size_t body_index = physicsBodyCreate(
-		  vec2{(float)((rand() % (int)global.render.width)), 
-		     (float)(rand() % (int)global.render.height) },
-		 vec2{15,15},
-		  vec4{testrand,testrand,testrand,testrand}
-		);
-
-	    Body* body = physicsBodyGet(body_index);
-	    body->acceleration[0] = rand() % 200 - 100;
-	    body->acceleration[1] = rand() % 200 - 100;
- }
-		 
-    Quad quad1;
-    pos[0] = global.render.width * 0.5f;
-    pos[1] = global.render.height * 0.25f;
-    qsize[0] =  global.render.height * 0.05;
-    qsize[1] =  global.render.width * 0.05f;
-    vec2 testSize = {50,50};
-    vec4 testColor = {0,1,0,1};
-    
-    QuadCreate(&quad1,qsize, pos,testColor);
-    int i;
-    
- 
+// Set engine state to running at the beginning
     GlobalRunning = 1;
 
-    const char *screenText = "Plug in a joystick, please.";
-    // SDL_SetRenderDrawColor(global.render.renderer, 0, 0, 0, 255);
-    // SDL_RenderClear(global.render.renderer);
+    SDL_Event event;
 
-   
-    //main loop
+    // (TODO) load_level(level name) 
 
-    /*
-      SDL_PollEvent() ===> This function removes the first event from the queue.
-      Copying the value into a parameter of type SDL_Event.
-      If the event queue was empty, the function will return 0.
-    */
+    //reminder to untie the engine to the fps (is set to 60 for now)
+    time_init(120);
+    config_init();
     
+
+    physicsInit();
+    renderInit();
+
+  struct  QuadUnion quad = QuadCreate((vec2){200,200}, (vec2){200,200},(vec4*)(vec4){100,10,10,1});
+    
+    // (TODO) Figure out what to do with this later
+    const char *screenText = "Plug in a joystick, please.";
+    
+   
+    //main game loop
     while (GlobalRunning) {
 	time_update();
+	fpsUpdate();
+	
+	QuadMove(quad.quad, pos[0], pos[1]);
+// Scenes management section
+	
 	//    switch (currentState) {
 	//        case STATE_MENU:
 	//            {MenuScene();}
@@ -192,95 +190,37 @@ int main(int argc, char *argv[])
 	// 	 	//other scenes can go here
 	//    }
 	
-	QuadMove(&quad1, pos[0], pos[1]);
-	//QuadChangeSize(&quad1, qsize[0],qsize[1]);
 	while (SDL_PollEvent(&event)) {
 	    if (event.type == SDL_EVENT_QUIT) {
 		GlobalRunning = false;
 	    } 
 	}
-	//move the definition of this at some point
-	input_update();
-       
+	
+	
+        input_update();
+
 	input_handle();
-	physicsUpdate();
-//rendering block begin
-        renderBegin();
 
-	
-	QuadSetSize(&quad1, qsize[0], qsize[1]);
-	
-       QuadSetHitBoxSize(&quad1, qsize[0], qsize[1]);
-	
-       spatialHashClear(gSpatialHash);
+        physicsUpdate();
 
-        for(int x = 0; x <body_count;++x)
-	{
-	    Body *body = physicsBodyGet(x);
+	//rendering block begin
+	renderBegin();
 
-	    spatialHashInsert(gSpatialHash, body); 
-	    renderQuad(body->aabb.position,body->aabb.half_size,body->color);
-	    
-	    //wall and ceiling bounce
-
-	     if (body->aabb.position[0] > global.render.width || body->aabb.position[0] < 0)
-	     	 body->velocity[0] *= -2;
-	     
-	     if (body->aabb.position [1] > global.render.height || body->aabb.position[1] < 0)
-		 body->velocity[1] *= -2;
-	      
-    
-	    //   //aabb test scenario
-	    // if(testAABBAABB(&quad1.body->aabb,&body->aabb))
-	    // {
-	    // 	setVec4(&quad1.color,1.f,1.f,0.f,1.f);
-	    // 	printf("\n collided");
-	    // }
-	    // else
-	    // 	setVec4(&quad1.color,2.f,0.f,1.f,0.f);
-	  
-	    
-	    if (body->velocity [0] > 500)
-		body->velocity[0] = 500;
-	    if (body->velocity [0] < -500)
-		body->velocity[0] = -500;
-	    if (body->velocity [1] > 500)
-		body->velocity[1] = 500;
-	    if (body->velocity [1] < -500)
-		body->velocity[1] = -500;
-	}
-
-        Array_List* candidates = arrayListCreate(sizeof(Body*), 16);
-	
-        setVec4(&quad1.color, 0.f, 1.f, 0.f, 1.f);
-
-	spatialHashQuery(
-	    gSpatialHash,
-	    quad1.body->aabb.position,
-	    quad1.body->aabb.half_size[0],
-	    candidates
-	    );
-
-        for (size_t i = 0; i < candidates->len; ++i)
-	{
-	    Body* body = *(Body**)arrayListGet(candidates, i);
-
-	    if (testAABBAABB(&quad1.body->aabb, &body->aabb))
-	    {
-		setVec4(&quad1.color, 1.f, 1.f, 0.f, 1.f);
-	    }
-	    else
-		setVec4(&quad1.color,2.f,0.f,1.f,0.f);
-	  
-	}
-	arrayListDestroy(candidates);
-        renderQuad(quad1.pos,quad1.size,quad1.color);
-	
+       
+       	
+       
+       	
+	// again for testing, probably should put it under a flag 
 	if(toggleHitBoxVisual)
 	    drawAllAABB();
+	if (fps_timer == 0.0f)
+	    printf("FPS: %.2f\n", fps_value);
+
+	renderQuad(quad.quad);	
 	renderEnd();
 	//rendering block end
-	time_update_late();
+
+        time_update_late();
     }
     
     Terminate();
@@ -294,10 +234,6 @@ void Terminate() {
         SDL_CloseJoystick(joystick);
     }
     
-    if (gSpatialHash) {
-	spatialHashDestroy(gSpatialHash);
-    gSpatialHash = NULL;
-    }
     // Quit
     SDL_DestroyWindow( global.render.window);
     SDL_Quit();

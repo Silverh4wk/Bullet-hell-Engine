@@ -1,25 +1,44 @@
-#pragma once
 
-#include <SDL3/SDL.h>
+#ifndef RENDER_H
+#define RENDER_H
+
+
 #include <linmath.h>
 #include "../helpers.h"
-
 #include "../objects/shapes.h"
 #include "../engine/physics.h"
+#include <SDL3/SDL.h>
 
-typedef struct Render_State
+
+struct Render_State
 {
     SDL_Window *window;
     SDL_Renderer *renderer;
     real32 height;
     real32 width;
     SDL_DisplayID displayID;
-}Render_State;
+} ;
 
-void renderInit(void);
-void renderBegin(void);
-void renderEnd(void);
-void renderQuad(Quad quad);
-void renderQuad(vec2 pos, vec2 size, vec4 color);
-void renderAABB(AABB *aabb, vec4 color);
-void drawAllAABB(void);
+//Initialize the rendering device 
+void
+renderInit(void);
+
+//rendering block beginning
+void
+renderBegin(void);
+//rendering block ending
+void
+renderEnd(void);
+
+//render a quad to the screen
+void renderQuad(struct Quad* quad);
+
+//Helper function to render the bounding box to the screen
+void
+renderAABB(struct AABB *aabb, vec4 color);
+
+//render all bounding boxes using renderAABB()
+void
+drawAllAABB(void);
+
+#endif

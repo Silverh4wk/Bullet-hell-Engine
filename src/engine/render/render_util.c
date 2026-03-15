@@ -6,11 +6,12 @@
 #include "render_internal.h"
 
 
-uint32 renderShaderCreate(const char *path_vert, const char *path_frag) {
+uint32
+renderShaderCreate(const char *path_vert, const char *path_frag) {
     int success;
     char log[512];
 
-    File file_vertex = ioFileRead(path_vert);
+    struct File_S file_vertex = ioFileRead(path_vert);
 
     if(!file_vertex.is_valid){
         ERROR_EXIT("Error reading vertix shader:  %s\n", path_vert);
@@ -24,7 +25,7 @@ uint32 renderShaderCreate(const char *path_vert, const char *path_frag) {
 	ERROR_EXIT("Error compiling vertex shader. %s\n", log);
     }
 
-    File file_fragment = ioFileRead(path_frag);
+    struct File_S file_fragment = ioFileRead(path_frag);
     if (!file_fragment.is_valid) {
 	ERROR_EXIT("Error reading shader: %s\n", path_frag);}
     

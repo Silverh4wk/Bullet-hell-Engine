@@ -2,17 +2,17 @@
 
 
 #include <assert.h>
-#include <stdint.h>
+#include "../../types.h"
 #include <stdlib.h>
 #include <string.h>
 
-// Hash table entry (slot may be filled or empty).
-typedef struct {
+//(slot may be filled or empty).
+typedef struct HashTableEntry{
     const char* key;  // key is NULL if this slot is empty
     void* value;
 } HashTableEntry;
 
-// Hash table structure: create with ht_create, free with ht_destroy.
+
 struct HashTable {
     HashTableEntry* entries;  // hash slots
     size_t capacity;    // size of _entries array
@@ -56,9 +56,10 @@ void hashTableDestroy(HashTable* table) {
 // Return 64-bit FNV-1a hash for key (NUL-terminated). See description:
 // https://en.wikipedia.org/wiki/Fowler–Noll–Vo_hash_function
 static uint64_t hashKey(const char* key) {
-    uint64_t hash = FNV_OFFSET;
+    uint64 hash = FNV_OFFSET;
     for (const char* p = key; *p; p++) {
-        hash ^= (uint64_t)(unsigned char)(*p);
+	//XoRing the byte of the input  before multiplying it with the FNV prime value 
+	 hash ^= (uint64)(unsigned char)(*p);
         hash *= FNV_PRIME;
     }
     return hash;
@@ -66,8 +67,8 @@ static uint64_t hashKey(const char* key) {
 
 void* hashTableGet(HashTable* table, const char* key) {
     // AND hash with capacity-1 to ensure it's within entries array.
-    uint64_t hash = hashKey(key);
-    size_t index = (size_t)(hash & (uint64_t)(table->capacity - 1));
+    uint64 hash = hashKey(key);
+    size_t index = (size_t)(hash & (uint64)(table->capacity - 1));
 
     // Loop till we find an empty entry.
     while (table->entries[index].key != NULL) {

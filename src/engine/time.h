@@ -1,7 +1,9 @@
-#pragma once
+#ifndef TIME_H
+#define TIME_H
+
 #include "../helpers.h"
 
-typedef struct Time_State {
+struct Time_State {
 
     real32 delta;// the time between frames
     real32 now; // the time of the current frame
@@ -13,9 +15,21 @@ typedef struct Time_State {
 
     uint32 frame_rate;
     uint32 frame_count;
-}Time_State;
+};
 
+// Initiate the engine time with a target framrate
+void
+time_init(uint32 frame_rate);
 
-void time_init(uint32 frame_rate);
-void time_update(void);
-void time_update_late(void);
+// Computes at the beginning of each frame
+// Updates the timing info
+void
+time_update(void);
+
+// play catch up
+// Called at the end of each frame
+// enforce frame rate cap
+void
+time_update_late(void);
+
+#endif

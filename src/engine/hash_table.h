@@ -1,6 +1,7 @@
 // Simple hash table implemented in C.
 
-#pragma once
+#ifndef HASH_TABLE_H
+#define HASH_TABLE_H
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -8,6 +9,16 @@
 
 typedef struct HashTable HashTable;
 
+
+//hash table iterator
+typedef struct HashTableIterator{
+    const char* key;  // current key
+    void* value;      // current value
+
+    // Don't use these fields directly.
+    HashTable* _table;       // reference to hash table being iterated
+    size_t _index;    // current index into HashTableEntries
+} HashTableIterator;
 
 HashTable* hashTableCreate(void);
 
@@ -21,20 +32,11 @@ void* hashTableGet(HashTable* table, const char* key);
 // be NULL). If not already present in table, key is copied to newly
 // allocated memory (keys are freed automatically when ht_destroy is
 // called). Return address of copied key, or NULL if out of memory.
+
 const char* hashTableSet(HashTable* table, const char* key, void* value);
 
 
 size_t hashTableLength(HashTable* table);
-
-//hash table iterator
-typedef struct HashTableIterator{
-    const char* key;  // current key
-    void* value;      // current value
-
-    // Don't use these fields directly.
-    HashTable* _table;       // reference to hash table being iterated
-    size_t _index;    // current index into HashTableEntries
-} HashTableIterator;
 
 // Return new hash table iterator (for use with ht_next).
 HashTableIterator hashTableIterator(HashTable* table);
@@ -45,5 +47,4 @@ HashTableIterator hashTableIterator(HashTable* table);
 bool hashTableNext(HashTableIterator* it);
 
 
-
-
+#endif

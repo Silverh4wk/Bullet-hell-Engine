@@ -1,18 +1,38 @@
-#pragma once
+#ifndef ARRAY_LIST_H
+#define  ARRAY_LIST_H
+
 #include "../types.h"
 
-typedef struct Array_List
+
+struct Array_List
 {
     size_t len;
     size_t capacity;
     size_t item_size;
     void * items;
-    
-}
-    Array_List;
+};
 
-Array_List* arrayListCreate(size_t item_size, size_t init_capacity);
-size_t arrayListAppend(Array_List* list, void* item);
-void* arrayListGet(Array_List* list, size_t index);
-uint8 arrayListRemove(Array_List* list, size_t index);
-void arrayListDestroy(Array_List* list);
+// allocates memory for the array
+// return a pointer to the created array 
+struct Array_List*
+arrayListCreate(size_t item_size, size_t init_capacity);
+
+//append an item to the list
+size_t
+arrayListAppend(struct Array_List* list, void* item);
+
+//get an item from the list using its index
+void*
+arrayListGet(struct Array_List* list, size_t index);
+
+//remove an item from the array 
+uint8
+arrayListRemove(struct Array_List* list, size_t index);
+
+// destroy all items in the array, freeing their mem
+// destroying the list itself and freeing its mem
+void
+arrayListDestroy(struct Array_List* list);
+
+
+#endif

@@ -1,4 +1,6 @@
-#pragma once
+#ifndef TYPES_H
+#define TYPES_H
+
 #include <stdint.h>
 
 typedef uint8_t uint8;
@@ -13,3 +15,4 @@ typedef float real32 ;
 typedef double real64 ;
 typedef uint32_t bool32;
 
+#endif

@@ -1,20 +1,36 @@
-#pragma once
+#ifndef SPATIAL_HASHING_H
+#define SPATIAL_HASHING_H
+
 #include <stdlib.h>
 #include "../hash_table.h"
 #include "../array_list.h"
 #include "../../helpers.h"
 #include "../physics.h"
 
-typedef struct {
+struct SpatialHash{
     HashTable* table;
-} SpatialHash;
+ } ;
 
 
-SpatialHash* spatialHashCreate(void);
-void spatialHashDestroy(SpatialHash* sh);
-static inline int worldToCell(real32 coordinate);
-static void makeCellKey(vec2 pos, char *out, size_t outSize);
+struct SpatialHash*
+spatialHashCreate(void);
 
-void spatialHashClear(SpatialHash* sh);
-void spatialHashInsert(SpatialHash* sh, Body* body);
-void spatialHashQuery(SpatialHash* sh,vec2 pos, float radius,Array_List* outResults);
+void
+spatialHashDestroy(struct SpatialHash* sh);
+
+static inline int
+worldToCell(real32 coordinate);
+
+static void
+makeCellKey(int x, int y, char *out, size_t outSize);
+
+void
+spatialHashClear(struct SpatialHash* sh);
+
+void
+spatialHashInsert(struct SpatialHash* sh, struct Body* body);
+
+void
+spatialHashQuery(struct SpatialHash* sh,vec2 pos, float radius,struct Array_List* outResults);
+
+#endif

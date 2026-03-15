@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "io.h"
 
@@ -11,10 +12,10 @@
 #define IO_WRITE_ERROR_GENERAL "Error writing into file: %s. errno: %d\n"
 #define IO_READ_ERROR_MEMORY  "Not enough memory to read the fwssile: %s\n"
 
-File ioFileRead(const char *path)
+struct File_S ioFileRead(const char *path)
 {
-    File file;
-    file.is_valid = false ;
+    struct File_S file;
+    file.is_valid = false  ;
     FILE *filePointer = fopen(path,"rb");
     if(!filePointer||ferror(filePointer)){
 	ERROR_RETURN(file,IO_READ_ERROR_GENERAL, path, errno);
@@ -25,8 +26,10 @@ File ioFileRead(const char *path)
     size_t used = 0;
     size_t size = 0;
     size_t n = 0;
-	
+
+    //read the file content
     while(true){
+	//Expands the buffer when needed
 	if(used + IO_READ_CHUNK_SIZE + 1 > size)
 	{
 	    size = used + IO_READ_CHUNK_SIZE + 1;
@@ -56,6 +59,7 @@ File ioFileRead(const char *path)
 	ERROR_RETURN(file,IO_READ_ERROR_GENERAL,path,errno);
     }
 
+    //resizing the data buffer to the correct size
     temp =(char*) realloc(data, used+1);
     if(!temp)
     {
@@ -71,6 +75,7 @@ File ioFileRead(const char *path)
     file.is_valid = true;
     return file;
 };
+
 int ioFileWrite(void *buffer, size_t size, const char *path)
 {
     FILE *filePointer = fopen(path,"wb");

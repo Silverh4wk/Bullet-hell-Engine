@@ -10,16 +10,19 @@
 struct Body
 {
     AABB aabb;
+    size_t hp;
     vec2 velocity;
     vec2 acceleration;
-    vec4 color;
 };
 
-void physicsInit(void);
+void
+physicsInit(void);
 
-void physicsUpdate(void);
+void
+physicsUpdate(void);
 
-size_t physicsBodyCreate(vec2 pos, vec2 size);
+size_t
+physicsBodyCreate(vec2 pos, vec2 size);
 
 struct Body *
 physicsBodyGet(size_t index);

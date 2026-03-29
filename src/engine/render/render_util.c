@@ -8,6 +8,7 @@
 
 uint32
 renderShaderCreate(const char *path_vert, const char *path_frag) {
+
     int success;
     char log[512];
 
@@ -54,4 +55,3 @@ renderShaderCreate(const char *path_vert, const char *path_frag) {
     free(file_fragment.data);
     return shader;
 };
-

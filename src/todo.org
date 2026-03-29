@@ -1,33 +1,29 @@
-** DONE Window events
+* TODO Window events
 
--Handle Resize(to be done)
+** TODO Handle Resize
 
--Store updated width/height in a global or struct WindowDimensions (why? idk yet really maybe ill be able to use it later on something)(done).
+** DONE Store updated width/height in a global or struct WindowDimensions (why? idk yet really maybe ill be able to use it later on something)(done).
 
--Trigger a renderer update (recalculate projection, viewport, etc.)(done).
+** DONE Trigger a renderer update (recalculate projection, viewport, etc.).
 
--Handle Focus / Minimize (what abt borderless too)(to be done)
+** DONE Handle Focus / Minimize (what abt borderless too)
 
--Capture WM_ACTIVATEAPP / SDL_EVENT_WINDOW_FOCUS_GAINED / LOST (to be done).
+** TODO [#B] Capture WM_ACTIVATEAPP / SDL_EVENT_WINDOW_FOCUS_GAINED / LOST (to be done).
 
--Pause the game/editor loop if minimized or unfocused (important) (to be done).
+** TODO [#C] Pause the game/editor loop if minimized or unfocused (important) (to be done).
 
--Handle Close and saving of game data
+** TODO Handle Close and saving of game data (Dont have a game yet)
+
+** TODO fix the hitbox rendering issues
 
 
 
-** DONE Input(done)
+** TODO Input
 keyboard events like wasdown and isdown should properly be handled and logged
 mouse inputs cuz its a bullet hell duh
 gamepad, also make sure to handle hotplugging properly
 
 
-
-** TODO for the future
-maybe theme everything, idk get ri to help with the design of the menus or whatever
-** highlights around the player hurt box, maybe around the bullets too for testing.
-
-** TODO Antagonists 
 
 * TODO Bullet counts
 **Render instancing for bullet meshes. one draw call for atleast 100 bullets

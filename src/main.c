@@ -9,7 +9,8 @@
 #include "keyboardTable.h"
 
 #include "engine/render.h"
-#include "math.h"
+#include "engine/render/render_internal.h"
+#include <linmath.h>
 #include "objects/shapes.h"
 
 #include "engine/global.h"
@@ -21,6 +22,7 @@
 
 
 
+#define BODY_COUNT 4096*2
 
 static float fps_timer = 0.0f;
 static int   fps_frames = 0;
@@ -147,35 +149,35 @@ void Terminate();
 //
 int main(int argc, char *argv[])
 {
-    
-    
-// Set engine state to running at the beginning
-    GlobalRunning = 1;
 
+    // Set engine state to running at the beginning
+    GlobalRunning = 1;
+    
     SDL_Event event;
 
     // (TODO) load_level(level name) 
 
     //reminder to untie the engine to the fps (is set to 60 for now)
-    time_init(120);
+    time_init(60);
+
     config_init();
     
 
     physicsInit();
     renderInit();
-
-  struct  QuadUnion quad = QuadCreate((vec2){200,200}, (vec2){200,200},(vec4*)(vec4){100,10,10,1});
-    
+	 
     // (TODO) Figure out what to do with this later
     const char *screenText = "Plug in a joystick, please.";
-    
-   
+
+    vec4 bulletColor = {1.0f, 0.0f, 1.0f, 1.0f}; 
+    struct QuadUnion bullet = QuadCreate((vec2){100,200}, (vec2){32,32}, &bulletColor,true);
+    struct QuadUnion player = QuadCreate((vec2){400,300}, (vec2){64,64}, NULL, true);
+
     //main game loop
     while (GlobalRunning) {
 	time_update();
 	fpsUpdate();
 	
-	QuadMove(quad.quad, pos[0], pos[1]);
 // Scenes management section
 	
 	//    switch (currentState) {
@@ -193,33 +195,34 @@ int main(int argc, char *argv[])
 	while (SDL_PollEvent(&event)) {
 	    if (event.type == SDL_EVENT_QUIT) {
 		GlobalRunning = false;
-	    } 
+	    }
+	    if (event.window.type == SDL_EVENT_WINDOW_RESIZED) {
+		printf("MESSAGE:Resizing window...\n");
+		SDL_GetWindowSize(global.render.window, &global.render.width, &global.render.height);
+		SDL_UpdateWindowSurface(global.render.window);
+	    }
 	}
 	
 	
-        input_update();
-
+	input_update();
+       
 	input_handle();
-
+	
         physicsUpdate();
 
+	QuadMove(player.quad, pos[0],pos[1] );
 	//rendering block begin
 	renderBegin();
-
        
-       	
-       
-       	
-	// again for testing, probably should put it under a flag 
+	renderSubmitQuad(bullet.quad);
+	renderSubmitQuad(player.quad);
+	// for testing, probably should put it under a flag 
 	if(toggleHitBoxVisual)
 	    drawAllAABB();
-	if (fps_timer == 0.0f)
-	    printf("FPS: %.2f\n", fps_value);
-
-	renderQuad(quad.quad);	
-	renderEnd();
+	
+        renderEnd();
 	//rendering block end
-
+	
         time_update_late();
     }
     
@@ -235,7 +238,7 @@ void Terminate() {
     }
     
     // Quit
-    SDL_DestroyWindow( global.render.window);
+    SDL_DestroyWindow(global.render.window);
     SDL_Quit();
 }
 

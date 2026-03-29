@@ -1,4 +1,5 @@
 #include "../physics.h"
+#include "../../objects/shapes.h"
 #include "../global.h"
 #include "../array_list.h"
 #include "../../helpers.h"
@@ -15,6 +16,7 @@ void physicsInit(void)
 
 // Update all bodies in the list physics properties
 // This to happen at the end of every frame
+
 void physicsUpdate(void)
     {
 	struct Body *body ;
@@ -31,22 +33,13 @@ void physicsUpdate(void)
 }
 
 //init a body with physics properties
-size_t physicsBodyCreate(vec2 pos, vec2 size) {
-
-    vec4 c;
-
-// just any color for the hitbox #2563EB (pretty blue)
-    setVec4(&c, 37, 99, 235, 1);
-    
-    
+size_t physicsBodyCreate(vec2 pos, vec2 size) {    
     struct Body body = {
 	.aabb = {
 	    .coords = {pos[0],pos[1]},
 	    .dims ={ size[0]/2,size[0]/2},
-	    
 	},
 	.velocity = {0,0},
-	.color = {c[0],c[1],c[2],c[3]},
 //if i ever think of adding gravity but who knows	
 //.gravity  = 9.8f,
     };

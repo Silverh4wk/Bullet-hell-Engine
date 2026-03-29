@@ -3,13 +3,16 @@
 
 #include <linmath.h>
 #include "../types.h"
-#include "../engine/physics.h"
+#include <stdbool.h>
+#include <Glad/glad.h>
 
- struct Quad {
+struct Quad {
     vec2 pos;
     vec2 size;
     vec4 color;
     struct Body* body;
+    GLuint texture;
+    bool physics_enabled;
 };
 
 
@@ -31,7 +34,7 @@ struct QuadUnion {
 // position and size are needed but color can be NULL
 
 struct QuadUnion
-QuadCreate(vec2 pos, vec2 size , vec4* color);
+QuadCreate(vec2 pos, vec2 size , vec4* color, bool t_physics);
 
 
 //change the position of the quad  

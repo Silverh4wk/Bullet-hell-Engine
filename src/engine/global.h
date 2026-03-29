@@ -13,7 +13,6 @@ struct Global {
     struct Input_State  input;
     struct Time_State   time;
 } ;
-
 extern struct Global global;
 
 

@@ -19,9 +19,9 @@ renderInitWindow(int width, int height) {
     
  
     SDL_Window * window = SDL_CreateWindow("BHE",
-					   global.render.width-200,
-					   global.render.height-200,
-					   SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+					   global.render.width,
+					   global.render.height,
+					   SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN |SDL_WINDOW_INPUT_FOCUS |SDL_WINDOW_RESIZABLE);
 			   
     if (!window) {
         ERROR_EXIT("Failed to create a window: %s\n", SDL_GetError());
@@ -29,7 +29,9 @@ renderInitWindow(int width, int height) {
 
     
     //Glad basically load all the pointers from memory into the right place so we can use them
+    
     SDL_GL_CreateContext(window);
+    
     if(!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
     {	ERROR_EXIT( "Failed to LoadGL: %s\n", SDL_GetError());
     }
@@ -37,8 +39,7 @@ renderInitWindow(int width, int height) {
     printf("Vendor:   %s\n", glGetString(GL_VENDOR))  ; 
     printf("Renderer: %s\n", glGetString(GL_RENDERER)); 
     printf("Version:  %s\n", glGetString(GL_VERSION)) ; 
-
-  
+    
     return window;
 };
 
@@ -47,7 +48,7 @@ renderInitWindow(int width, int height) {
 // 1. bind Vertex Array Object
 // 2. copy our vertices array in a buffer for OpenGL to use
 // 3. then set our vertex attributes pointers
-void renderInitQuad(uint32 *vao, uint32 *vbo, uint32 *ebo) {
+void renderInitQuad(struct RenderStateInternal *state,uint32 *vao, uint32 *vbo, uint32 *ebo) {
 
     real32 vertices[] =
 	{ 
@@ -105,18 +106,74 @@ void renderInitQuad(uint32 *vao, uint32 *vbo, uint32 *ebo) {
     glEnableVertexAttribArray(0); 
     glEnableVertexAttribArray(1);
 
+    //instancing setup
+
+    glGenBuffers(1, &state->instance_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, state->instance_vbo);
+
+    state->instance_capacity = 1024;
+
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        state->instance_capacity * sizeof(struct InstanceData),
+        NULL,
+        GL_DYNAMIC_DRAW
+    );
+
+    GLsizei stride = sizeof(struct InstanceData);
+
+    // mat4 -> uses locations 2,3,4,5
+    for(int i = 0; i < 4; i++)
+    {
+        GLuint loc = 2 + i;
+
+        glEnableVertexAttribArray(loc);
+
+        glVertexAttribPointer(
+            loc,
+            4,
+            GL_FLOAT,
+            GL_FALSE,
+            stride,
+            (void*)(sizeof(float) * 4 * i)
+        );
+
+        glVertexAttribDivisor(loc,1);
+    }
+
+    // color attribute
+    GLuint color_loc = 6;
+
+    glEnableVertexAttribArray(color_loc);
+
+    glVertexAttribPointer(
+        color_loc,
+        4,
+        GL_FLOAT,
+        GL_FALSE,
+        stride,
+        (void*)(sizeof(float) * 16)
+    );
+
+    glVertexAttribDivisor(color_loc,1);
+
+
     glBindVertexArray(0);
+
 };
 
 
 void renderInitColorTexture(uint32 *texture)
 {
+    
     glGenTextures(1,texture);
     glad_glBindTexture(GL_TEXTURE_2D,*texture);
+    
     uint8 white[4] = {255,255,255,255};
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1,1,0, GL_RGBA, GL_UNSIGNED_BYTE, white);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1,1,0, GL_RGBA, GL_UNSIGNED_BYTE,white);
     glBindTexture(0,GL_TEXTURE_2D);
 };
+
 //reminder to do something abt this
 void renderInitShaders(struct RenderStateInternal *state){
     state->shader_default = renderShaderCreate("I:/FYP/src/shaders/default.vert",

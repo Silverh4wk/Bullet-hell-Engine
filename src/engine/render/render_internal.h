@@ -2,7 +2,24 @@
 #define RENDER_INTERNAL_H
 
 #include <SDL3/SDL.h>
-#include "../render.h"
+#include "../../types.h"
+#include <Glad/glad.h>
+#include <linmath.h>
+
+// per-instance data layout sent to GPU 
+ struct InstanceData {
+    mat4x4 model;    
+    vec4 color;
+ };
+
+struct Batch {
+    GLuint texture;                 // texture ID for this batch
+    struct InstanceData* instances; // array of instances
+    size_t count;                   // number of instances currently in batch
+    size_t capacity;                 // allocated size of instances array
+};
+
+
 
 struct RenderStateInternal{
     uint32 vao_quad; 
@@ -14,13 +31,21 @@ struct RenderStateInternal{
     uint32 shader_default;
     uint32 texture_color;
     mat4x4 projection;
+
+    // instancing 
+    GLuint instance_vbo;
+    size_t instance_capacity;  //current size of gpu buffer
+
+    //batching
+    struct Batch batches[64];        // max 64 different textures per frame
+    int batchCount;
 };
 
 SDL_Window *
 renderInitWindow(int width, int height);
 
 void
-renderInitQuad(uint32 *vao, uint32 *vbo, uint32 *ebo);
+renderInitQuad(struct RenderStateInternal *state,uint32 *vao, uint32 *vbo, uint32 *ebo);
 
 void
 renderInitColorTexture(uint32 *texture);

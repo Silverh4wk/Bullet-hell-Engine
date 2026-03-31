@@ -11,14 +11,13 @@
 #include "engine/render.h"
 #include "engine/render/render_internal.h"
 #include <linmath.h>
-#include "objects/shapes.h"
+#include "shapes.h"
 
-#include "engine/global.h"
-#include "engine/config.h"
-#include "engine/input.h"
-#include "engine/time.h"
-#include "engine/physics.h"
-#include "engine/physics/spatial_hashing.h"
+#include "global.h"
+#include "config.h"
+#include "input.h"
+#include "time.h"
+#include "physics.h"
 
 
 

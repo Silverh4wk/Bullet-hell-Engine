@@ -3,22 +3,23 @@
 
 
 void
-initPool(struct PoolAllocator *pool, size_t chunks)
+initPool(struct PoolAllocator *pool, size_t chunk_size, size_t chunks_per_block)
 {
     pool->alloc = NULL;
     pool->blocks = NULL;
-    pool->chunks_per_block = chunks ;
+    pool->chunk_size = chunk_size; 
+    pool->chunks_per_block = chunks_per_block ;
 }
 
 
 void *
-allocatePool(struct PoolAllocator *pool,size_t size) {
+allocatePool(struct PoolAllocator *pool) {
  
   // No chunks left in the current block, or no any block
   // exists yet. Allocate a new one, passing the chunk size:
  
  if (pool->alloc == NULL) {
-    pool->alloc = allocateBlock(pool, size);
+    pool->alloc = allocateBlock(pool);
     if (pool->alloc == NULL) return NULL;
 }
  
@@ -53,11 +54,11 @@ deallocatePool(struct PoolAllocator* pool,void *chunk) {
 
 
 struct Chunk *
-allocateBlock(struct PoolAllocator *pool, size_t chunkSize)
+allocateBlock(struct PoolAllocator *pool)
 {
     // make sure of proper alignment 
     size_t align = sizeof(void*);
-    size_t actualSize = (chunkSize + align - 1) & ~(align - 1);
+    size_t actualSize = (pool->chunk_size + align - 1) & ~(align - 1);
 
     // check to see if chunk can hold the next pointer
     if (actualSize < sizeof(struct Chunk)) {

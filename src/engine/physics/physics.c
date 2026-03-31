@@ -1,13 +1,12 @@
 #include "../physics.h"
 #include "../../objects/shapes.h"
-#include "../global.h"
-#include "../array_list.h"
-#include "../../helpers.h"
+#include "global.h"
+#include "object_pool.h"
+#include "array_list.h"
 #include "physics_internal.h"
 
 
 static struct PhysicsStateInternal state;
-
 
 void physicsInit(void)
 {
@@ -76,7 +75,7 @@ void physicsToggleAllHitBoxes(void)
 {
     for (size_t i = 0; i < state.body_list->len; i++)
     {
-	struct Body* body = (struct Body*) arrayListGet(state.body_list, i);
+	struct Body* body = (struct Body*)arrayListGet(state.body_list, i);
 	body->aabb.toggle = (body->aabb.toggle == 0) ? 1 : 0;
     }
 }

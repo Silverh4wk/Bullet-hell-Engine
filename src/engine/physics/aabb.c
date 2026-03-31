@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "../aabb.h"
+#include "aabb.h"
 
 AABB*
 aabb_new(float x, float y, float hW, float hH) {

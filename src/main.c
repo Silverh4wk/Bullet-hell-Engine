@@ -16,9 +16,25 @@
 #include "engine/input.h"
 #include "engine/time.h"
 #include "engine/physics.h"
-#include "engine/dataStructs.h" //temp name 
+#include "engine/dataStructs.h" //temp name
 
 
+
+//(TESTING)
+// Collision callback for player
+void player_onCollision(struct Body* self, struct Body* other) {
+    printf("Player hit by bullet!\n");
+    other->active = false;   // destroy bullet
+  
+}
+
+// Collision callback for bullets
+void bullet_onCollision(struct Body* self, struct Body* other) {
+    // Bullet hits player – handled by player callback, but safe to also destroy
+    if (other->type == BODY_PLAYER) {
+        self->active = false;
+    }
+}
 #define BODY_COUNT 4096*2
 
 static float fps_timer = 0.0f;
@@ -165,9 +181,19 @@ int main(int argc, char *argv[])
     const char *screenText = "Plug in a joystick, please.";
 
     vec4 bulletColor = {1.0f, 0.0f, 1.0f, 1.0f}; 
-    struct QuadUnion bullet = QuadCreate((vec2){100,200}, (vec2){32,32}, &bulletColor,true);
-    struct QuadUnion player = QuadCreate((vec2){400,300}, (vec2){64,64}, NULL, true);
+    
+    struct QuadUnion player = QuadCreate((vec2){400,300}, (vec2){64,64}, NULL, BODY_PLAYER,true);
+    player.quad->body->onCollision = player_onCollision;
+    player.quad->body->active = true;
 
+
+     // Create a bullet body moving toward player
+    struct QuadUnion bullet = QuadCreate((vec2){100,300}, (vec2){8,8}, &bulletColor,  BODY_PLAYER, true);
+    bullet.quad->body->velocity[0] = 200.0f;  // move right 200 pixels/sec
+    bullet.quad->body->velocity[1] = 0;
+    bullet.quad->body->onCollision = bullet_onCollision;
+    bullet.quad->body->active = true;
+    
     //main game loop
     while (GlobalRunning) {
 	time_update();
@@ -199,16 +225,14 @@ int main(int argc, char *argv[])
 	}
 	
 	
-	input_update();
-       
+	inputUpdate();
 	input_handle();
-	
-        physicsUpdate();
-
+	physicsUpdate();
+	broadPhaseResolve(); 
+	physicsRemoveInactiveBodies();
 	QuadMove(player.quad, pos[0],pos[1] );
 	//rendering block begin
 	renderBegin();
-       
 	renderSubmitQuad(bullet.quad);
 	renderSubmitQuad(player.quad);
 	// for testing, probably should put it under a flag 

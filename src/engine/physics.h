@@ -2,10 +2,20 @@
 #define PHYSICS_H
 
 #include "aabb.h"
+#include "array_list.h"
 
 
+struct Body;
+
+// collision callback type
+typedef void (*CollisionCallback)(struct Body* self, struct Body* other);
 
 // struct that hold the physical "body" or state of an object
+
+typedef enum {
+  BODY_PLAYER,
+  BODY_BULLET,
+} type;
 
 struct Body
 {
@@ -13,6 +23,9 @@ struct Body
     size_t hp;
     vec2 velocity;
     vec2 acceleration;
+    CollisionCallback onCollision; // a function pointer
+    int  active;
+    type type;
 };
 
 void
@@ -22,7 +35,7 @@ void
 physicsUpdate(void);
 
 size_t
-physicsBodyCreate(vec2 pos, vec2 size);
+physicsBodyCreate(vec2 pos, vec2 size,type t);
 
 struct Body *
 physicsBodyGet(size_t index);
@@ -44,6 +57,16 @@ physicsBodyDestroyByIndex(size_t index);
 
 void
 physicsBodyDestroyByPtr(struct Body *body);
+
+void
+narrowPhaseResolve(struct Body *a, struct Array_List *candidates);
+
+void
+broadPhaseResolve(void);
+
+
+void
+physicsRemoveInactiveBodies(void);
 
 void
 physicsClearBodies(void);

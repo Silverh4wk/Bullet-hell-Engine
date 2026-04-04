@@ -36,6 +36,6 @@ typedef struct Input_State {
     
 }Input_State;
 
-void input_update(void);
+void inputUpdate(void);
 
 #endif

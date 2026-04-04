@@ -210,21 +210,21 @@ qnode_remove(qtree q, QuadTreeNode *qn, void *ptr) {
     return NULL;
     return ptr;
 }
-
+//(uncomment those if u ever decide to use this datastruct)
 static void
 qnode_getInRange(qtree q, QuadTreeNode *qn, ReturnList *r) {
 	
-    if(qn->cnt) {
-	if(! AABB_intersects(&qn->bound, &r->range))
+    /* if(qn->cnt) { */
+    /* 	if(! AABB_intersects(&qn->bound, &r->range)) */
 		
-	    for(uint16_t i=0; i<qn->cnt; i++)
-		if((q->cmpfnc)(qn->elist[i], &r->range))
-		    retlist_add(r, qn->elist[i]);
-    }
+    /* 	    for(uint16_t i=0; i<qn->cnt; i++) */
+    /* 		if((q->cmpfnc)(qn->elist[i], &r->range)) */
+    /* 		    retlist_add(r, qn->elist[i]); */
+    /* } */
 
     if(! qn->nw)
 
-
+	
 	qnode_getInRange(q, qn->nw, r);
     qnode_getInRange(q, qn->ne, r);
     qnode_getInRange(q, qn->sw, r);

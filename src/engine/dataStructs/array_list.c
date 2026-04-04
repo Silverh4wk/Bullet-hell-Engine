@@ -87,6 +87,10 @@ uint8 arrayListRemove(struct Array_List *list, size_t index)
     return 0;
 }
 
+void arrayListClear(struct Array_List *list)
+{
+    list->len =0;
+}
 
 void arrayListDestroy(struct Array_List *list)
 {

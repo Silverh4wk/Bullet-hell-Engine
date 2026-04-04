@@ -48,12 +48,11 @@ void spatialHashInsert(struct SpatialHash* sh, struct Body* body)
 {
     vec2 minC, maxC;
     minC[0] = worldToCell(body->aabb.coords[0] - body->aabb.dims[0]);
-    maxC[1] = worldToCell(body->aabb.coords[0] - body->aabb.dims[0]);
-    minC[0] = worldToCell(body->aabb.coords[0] - body->aabb.dims[0]);
-    maxC[1] = worldToCell(body->aabb.coords[0] - body->aabb.dims[0]);
+    maxC[0] = worldToCell(body->aabb.coords[0] + body->aabb.dims[0]);
+    minC[1] = worldToCell(body->aabb.coords[1] - body->aabb.dims[1]);
+    maxC[1] = worldToCell(body->aabb.coords[1] + body->aabb.dims[1]);
 
     char key[32];
-
     for (int cx = minC[0]; cx <= maxC[0]; cx++) {
         for (int cy = minC[1]; cy <= maxC[1]; cy++) {
             makeCellKey(cx, cy, key, sizeof(key));
@@ -63,8 +62,7 @@ void spatialHashInsert(struct SpatialHash* sh, struct Body* body)
                 list = arrayListCreate(sizeof(struct Body*), 4);
                 hashTableSet(sh->table, key, list);
             }
-
-            arrayListAppend(list, body);
+            arrayListAppend(list, &body);
         }
     }
 }
@@ -76,18 +74,19 @@ void spatialHashQuery(struct SpatialHash* sh,vec2 pos, real32 radius,struct Arra
     int minY = worldToCell(pos[1] - radius);
     int maxY = worldToCell(pos[1] + radius);
 
-    char key[32];
+    char key[32] = {0};
 
     for (int cx = minX; cx <= maxX; cx++) {
         for (int cy = minY; cy <= maxY; cy++) {
             makeCellKey(cx, cy, key, sizeof(key));
-
+	    
             struct Array_List* list =  (struct Array_List*)hashTableGet(sh->table, key);
             if (!list) continue;
 
             for (size_t i = 0; i < list->len; i++) {
-                struct Body* c = *(struct Body**)arrayListGet(list, i);
-                arrayListAppend(outResults, &c);
+   
+                struct Body* b = *(struct Body**)arrayListGet(list, i);
+                arrayListAppend(outResults, &b);
             }
         }
     }

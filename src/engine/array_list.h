@@ -29,6 +29,12 @@ arrayListGet(struct Array_List* list, size_t index);
 uint8
 arrayListRemove(struct Array_List* list, size_t index);
 
+// the next append will start at 0
+// ignoring the remaining elements in the list
+// it will also overwrite the remaining data once it gets to that point 
+void
+arrayListClear(struct Array_List *list);
+
 // destroy all items in the array, freeing their mem
 // destroying the list itself and freeing its mem
 void

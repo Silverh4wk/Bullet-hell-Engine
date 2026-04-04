@@ -1,7 +1,6 @@
 #include <stdlib.h>
 
 #include "shapes.h"
-#include "../engine/physics.h"
 #include "../engine/pool_allocator.h"
 #include "../helpers.h"
 
@@ -16,7 +15,7 @@ initQuadPool(void)
     }
 
 struct QuadUnion
-QuadCreate (vec2 pos, vec2 size , vec4* color, bool t_physics)
+QuadCreate (vec2 pos, vec2 size , vec4* color, type t,bool t_physics)
  {
      // if color is NULL
      vec4 c;
@@ -59,7 +58,7 @@ QuadCreate (vec2 pos, vec2 size , vec4* color, bool t_physics)
     //if physics body is set to true
     if(t_physics == true)
     {
-	size_t idx = physicsBodyCreate(pos, size);
+	size_t idx = physicsBodyCreate(pos, size,t);
 	quad->body = physicsBodyGet(idx);
     }
     

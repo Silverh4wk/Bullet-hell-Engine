@@ -5,6 +5,7 @@
 #include "../types.h"
 #include <stdbool.h>
 #include <Glad/glad.h>
+#include "../engine/physics.h"
 
 struct Quad {
     vec2 pos;
@@ -36,7 +37,7 @@ struct QuadUnion {
 // position and size are needed but color can be NULL
 
 struct QuadUnion
-QuadCreate(vec2 pos, vec2 size , vec4* color, bool t_physics);
+QuadCreate(vec2 pos, vec2 size , vec4* color, type t, bool t_physics);
 
 
 //change the position of the quad  

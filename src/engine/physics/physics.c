@@ -2,9 +2,8 @@
 #include "../../objects/shapes.h"
 #include "../global.h"
 #include "../pool_allocator.h"
-#include "../array_list.h"
 #include "physics_internal.h"
-
+#include "spatial_hashing.h"
 
 static struct PhysicsStateInternal state;
 
@@ -32,13 +31,15 @@ void physicsUpdate(void)
 }
 
 //init a body with physics properties
-size_t physicsBodyCreate(vec2 pos, vec2 size) {    
+size_t physicsBodyCreate(vec2 pos, vec2 size,type t) {    
     struct Body body = {
 	.aabb = {
 	    .coords = {pos[0],pos[1]},
-	    .dims ={ size[0]/2,size[0]/2},
+	    .dims ={ size[0]/2,size[1]/2},
 	},
 	.velocity = {0,0},
+	.onCollision = NULL,
+	.type = t,
 //if i ever think of adding gravity but who knows	
 //.gravity  = 9.8f,
     };
@@ -105,6 +106,69 @@ void physicsBodyDestroyByPtr(struct Body* body)
             return;
         }
     }
+}
+
+
+void physicsRemoveInactiveBodies(void) {
+    for (size_t i = 0; i < state.body_list->len; ) {
+        struct Body* b = physicsGetBody(i);
+        if (!b->active) {
+            arrayListRemove(state.body_list, i); 
+        } else {
+            i++;
+        }
+    }
+}
+
+
+void narrowPhaseResolve(struct Body* a, struct Array_List* candidates) {
+    for (size_t j = 0; j < candidates->len; j++) {
+        struct Body* b = *(struct Body**)arrayListGet(candidates, j);
+        if (a == b) continue;
+        if (!b->active) continue;
+	
+        if (testAABBAABB(&a->aabb, &b->aabb)) {
+            if (a->onCollision) a->onCollision(a, b);
+            if (b->onCollision) b->onCollision(b, a);
+        }
+    }
+}
+
+void broadPhaseResolve(void) {
+    if (state.body_list->len == 0) return;
+
+    // build spatial hash for all active bodies
+    struct SpatialHash* sh = spatialHashCreate();
+    for (size_t i = 0; i < state.body_list->len; i++) {
+        struct Body* body = physicsGetBody(i);
+        if (body->active) {
+            spatialHashInsert(sh, body);
+        }
+    }
+
+    
+    struct Array_List* candidates = arrayListCreate(sizeof(struct Body*), 0);
+
+    //  query nearby bodies 
+    for (size_t i = 0; i < state.body_list->len; i++) {
+        struct Body* a = physicsGetBody(i);
+        if (!a->active) continue; //ignore if the body isnt active
+	                          //will get deleted after
+
+        // Query radius = half the diagonal of AABB
+        float radius = sqrtf(a->aabb.dims[0] * a->aabb.dims[0] +
+                             a->aabb.dims[1] * a->aabb.dims[1]);
+
+        arrayListClear(candidates);
+        spatialHashQuery(sh, a->aabb.coords, radius, candidates);
+
+        // Narrow phase... test all candidates against 'a'
+        narrowPhaseResolve(a, candidates);
+    }
+
+    
+    spatialHashDestroy(sh);
+    arrayListDestroy(candidates);
 }
 
 

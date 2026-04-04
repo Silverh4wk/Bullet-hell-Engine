@@ -1,12 +1,22 @@
 #include "../linked_list.h"
 
-#include<stdlib.h>
+#include "../pool_allocator.h"
 
+#include <stdlib.h>
 #include <stdio.h>
+
+
+static struct PoolAllocator node_pool;
+
+
+void initLinkedListPool(void)
+    {
+	initPool(&node_pool, sizeof(Node), 256);
+    }
 
 Node *createNode(void *item) {
 
-    Node* new_node = malloc(sizeof(Node));
+    Node* new_node = allocatePool(&node_pool);
 
     new_node->item = item;
     new_node->prev = NULL;
@@ -119,7 +129,6 @@ findNode(List *list, size_t idx)
 
     Node* ptr = list->head;
     size_t i  = 0;
-
     while(ptr && i < idx)
     {
 	ptr = ptr->next;
@@ -150,7 +159,7 @@ deleteNodeByIdx(List *list, size_t idx)
         ptr->next->prev = ptr->prev;
     }
 
-    free(ptr);
+     deallocatePool(&node_pool, ptr);
     list->count--;
     return list->head; //return a pointer to the top of the list 
 }
@@ -177,7 +186,7 @@ deleteNode(List *list, Node *node)
     if (node->next) node->next->prev = node->prev;
 
     list->count--;
-    free(node);
+     deallocatePool(&node_pool, node);
 }
 
 void
@@ -187,7 +196,7 @@ deleteList(List *list)
 
     while (ptr) {
         Node* next = ptr->next; 
-        free(ptr);
+        deallocatePool(&node_pool, ptr);
         ptr = next;
     }
     list->head = NULL;
@@ -195,7 +204,7 @@ deleteList(List *list)
     list->count= 0;
 }
 
-
+//this prints the pointer as is  
 void
 printList(List *list)
 {

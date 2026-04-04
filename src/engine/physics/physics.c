@@ -1,8 +1,8 @@
 #include "../physics.h"
 #include "../../objects/shapes.h"
-#include "global.h"
-#include "object_pool.h"
-#include "array_list.h"
+#include "../global.h"
+#include "../pool_allocator.h"
+#include "../array_list.h"
 #include "physics_internal.h"
 
 

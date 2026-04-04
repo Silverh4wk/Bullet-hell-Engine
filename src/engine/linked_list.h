@@ -1,6 +1,7 @@
 #ifndef LINKED_LIST_H
 #define LINKED_LIST_H
 #include <stddef.h>
+
 typedef struct node {
     void * item; // data of any type,
     //all elements in the node must share the same type of data
@@ -13,6 +14,9 @@ typedef struct List {
     Node *tail; //pointer to the end of the list
     size_t count; //number of nodes in the list
 } List;
+
+void 
+initLinkedListPool(void); //initiate the object pool for linked lists
 
 Node *
 createNode(void* item); /*creates a new, independant node  */
@@ -52,6 +56,6 @@ void printList(List* list); /* prints all the nodes in the list */
 //List *Merge(List * fist, List * second); /* merges two sorted linked lists (TODO)*/
 
 size_t
-countNodes(List * list); /* returns the number of nodes in the list */
+getNodesCount(List * list); /* returns the number of nodes in the list */
 
 #endif

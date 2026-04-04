@@ -23,12 +23,14 @@ enum QuadResults{
     QUAD_ERR_INTERNAL
 }  ;
 
+void
+initQuadPool(void);//initiate the object pool for quad objects
+
 struct QuadUnion {
     enum  QuadResults result;
     // return a potiner to the allocated object if no issues
     struct Quad* quad;    
 };
-
 
 // allocoate memorycreates the quad with the given param
 // position and size are needed but color can be NULL

@@ -1,5 +1,5 @@
-#ifndef OBJECT_POOL_H
-#define OBJECT_POOL_H
+#ifndef POOL_ALLOCATOR_H
+#define POOL_ALLOCATOR_H
 
 #include <stddef.h>
 

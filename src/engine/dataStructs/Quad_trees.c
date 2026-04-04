@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
-
+#include "../pool_allocator.h"
 #include "../Quad_trees.h"
 
 #include "../physics.h"
@@ -51,6 +51,14 @@ typedef struct ReturnList {
     void **list;  ///< Array of pointers to found elements
 } ReturnList;
 
+
+static struct PoolAllocator qt_node_pool;
+
+void initQuadtreePool(void) {
+    initPool(&qt_node_pool, sizeof(QuadTreeNode), 256);
+}
+
+
 static void
 retlist_add(ReturnList *r, void *p) {
     r->list = realloc(r->list, sizeof(void*)*(r->cnt+1));
@@ -67,17 +75,13 @@ qtree_getMaxNodeCnt(qtree q) {
 
 static QuadTreeNode*
 qnode_new(qtree p, float x, float y, float hW, float hH) {
-    QuadTreeNode *q = malloc(sizeof(QuadTreeNode));
+    QuadTreeNode *q = allocatePool(&qt_node_pool);
     memset(q, 0, sizeof(QuadTreeNode));
     q->bound.coords[0] = x;
     q->bound.coords[1] = y;
     q->bound.dims[0] = hW;
     q->bound.dims[1] = hH;
 
-#if QTREE_THREADSAFE == 1
-    q->lock = (p->newfn)();
-    q->atomlock = (p->newfn)();
-#endif
     return q;
 }
 
@@ -88,6 +92,8 @@ qnode_free(qtree q, struct QuadTreeNode *qn) {
 
     qn->cnt = 0;
 
+//if one exist , the rest must exist
+    // so no need to check for each separately
     if(qn->nw) {
 	qnode_free(q, qn->nw);
 	qnode_free(q, qn->ne);
@@ -95,7 +101,7 @@ qnode_free(qtree q, struct QuadTreeNode *qn) {
 	qnode_free(q, qn->se);
     }
 	
-    free(qn);
+    deallocatePool(&qt_node_pool, qn);
 }
 
 #if QTREE_THREADSAFE == 1

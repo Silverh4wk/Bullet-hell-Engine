@@ -1,9 +1,19 @@
-#include "shapes.h"
-
 #include <stdlib.h>
+
+#include "shapes.h"
 #include "../engine/physics.h"
+#include "../engine/pool_allocator.h"
 #include "../helpers.h"
 
+
+static struct PoolAllocator quad_pool;
+
+
+void
+initQuadPool(void)
+    {
+	initPool(&quad_pool, sizeof(struct Quad), 256);
+    }
 
 struct QuadUnion
 QuadCreate (vec2 pos, vec2 size , vec4* color, bool t_physics)
@@ -35,12 +45,12 @@ QuadCreate (vec2 pos, vec2 size , vec4* color, bool t_physics)
     // just a double check if anything is out of the ordinary
     if (!isfinite(size[0]) || !isfinite(size[1]) ||
         !isfinite(pos[0]) || !isfinite(pos[1]) ||
-        !isfinite(*color[0]) || !isfinite(*color[1]) || !isfinite(*color[2]) || !isfinite(*color[3])) {
+         !isfinite(*color[0]) || !isfinite(*color[1]) || !isfinite(*color[2]) || !isfinite(*color[3])) {
 	r.result = QUAD_ERR_INVALID_COLOR; 
 	return r ;
     }
 
-    struct Quad *quad = malloc(sizeof(struct Quad));
+    struct Quad *quad = allocatePool(&quad_pool);
     
     // Fill hitbox stuff
     // Add to the body list

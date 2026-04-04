@@ -21,6 +21,7 @@ typedef struct _qtree* qtree;
 /// A function pointer def for determining if an element exists in a range
 typedef int (*qtree_fnc)(void *ptr, AABB *range);
 
+void initQuadtreePool(void); // A function to initiate the Quadtree pool
 /// Create a new qtree
 /**!
   Creates a new qtree with a bound of w,h size, centered at x,y.

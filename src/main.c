@@ -5,20 +5,18 @@
 #include "SDL3/SDL.h"
 #include <stdio.h>
 #include "stdlib.h"
+#include <linmath.h>
 
 #include "keyboardTable.h"
-
 #include "engine/render.h"
 #include "engine/render/render_internal.h"
-#include <linmath.h>
-#include "shapes.h"
-
-#include "global.h"
-#include "config.h"
-#include "input.h"
-#include "time.h"
-#include "physics.h"
-
+#include "objects/shapes.h"
+#include "engine/global.h"
+#include "engine/config.h"
+#include "engine/input.h"
+#include "engine/time.h"
+#include "engine/physics.h"
+#include "engine/dataStructs.h" //temp name 
 
 
 #define BODY_COUNT 4096*2
@@ -160,11 +158,9 @@ int main(int argc, char *argv[])
     time_init(60);
 
     config_init();
-    
-
     physicsInit();
     renderInit();
-	 
+    InitEnginePools();
     // (TODO) Figure out what to do with this later
     const char *screenText = "Plug in a joystick, please.";
 

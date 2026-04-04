@@ -12,7 +12,8 @@
 
 struct Render_State
 {
-    SDL_Window *window;
+    SDL_Window *
+    window;
     SDL_Renderer *renderer;
     int height;
     int width;

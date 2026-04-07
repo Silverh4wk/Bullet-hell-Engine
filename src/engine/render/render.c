@@ -296,12 +296,13 @@ drawAllAABB(void) {
 
 
 void renderShutdown(void) {
-    // free batch instance arrays (double free or something is occuring at the moment. fix this )
-    /* for (int i = 0; i < MAX_BATCHES; i++) { */
-    /*     free(state.batches[i].instances); */
-    /* } */
+//    free batch instance arrays (double free or something is occuring at the moment. fix this )
+    for (int i = 0; i < MAX_BATCHES; i++) {
+        free(state.batches[i].instances);
+    }
     // free ring buffer
     free(instance_buffer);
+    instance_buffer = NULL;
     // delete GL resources
     glDeleteProgram(state.shader_default);
     glDeleteTextures(1, &state.texture_color);
@@ -309,5 +310,5 @@ void renderShutdown(void) {
     glDeleteBuffers(1, &state.vbo_quad);
     glDeleteBuffers(1, &state.ebo_quad);
     glDeleteBuffers(1, &state.instance_vbo);
-    free(state.batches->instances);
+
 }

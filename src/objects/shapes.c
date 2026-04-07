@@ -56,9 +56,10 @@ QuadCreate (vec2 pos, vec2 size , vec4* color, type t,bool t_physics)
     // Return its index
 
     //if physics body is set to true
+    //create physics body and attach it to the quad
     if(t_physics == true)
     {
-	size_t idx = physicsBodyCreate(pos, size,t);
+	size_t idx = physicsBodyCreate(quad,pos, size,t);
 	quad->body = physicsBodyGet(idx);
     }
     

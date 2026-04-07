@@ -1,3 +1,31 @@
+* TODO Rendering system
+*** TODO Remove per‑frame malloc/realloc in batching – use pre‑allocated pools.
+
+*** Stop orphaning instance VBO every draw – use glBufferSubData or persistent
+
+*** Add renderShutdown() to free batch instance
+
+*** Add rotation support to Quad (mat4x4_rotate_
+
+*** Fix renderAABB to work without breaking batched state – draw after batching or as line
+
+*** Add layer/Z‑ordering (bullets behind enemies, player on
+
+*** Implement persistent mapped buffer for high bullet counts (
+
+*** Add circle rendering (quad + fragment shader discard or triangle
+
+*** Add camera/view transform (follow player,
+
+*** Add simple text output (bitmap font via instanced quads) for debug
+
+*** Add frustum culling to skip off‑screen
+
+*** Integrate particle system (colored quads, short lifetime) using same batching.
+
+
+
+
 * TODO Window events
 
 ** TODO Handle Resize

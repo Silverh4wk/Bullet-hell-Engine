@@ -21,17 +21,17 @@ void physicsUpdate(void)
 	//for every body in the list of bodies, update its physics state and position
 	for(uint32 i =0 ;i< state.body_list->len;++i)
 	{
-	    body = (struct Body*) arrayListGet(state.body_list, i);
-	    body->velocity[0] += body->acceleration[0] * global.time.delta;
-	    body->velocity[1] += body->acceleration[1] * global.time.delta;
-	    body->aabb.coords[0] += body->velocity[0] * global.time.delta;
-	    body->aabb.coords[1] += body->velocity[1] * global.time.delta;
-	    
-	}
+        body = (struct Body*) arrayListGet(state.body_list, i);
+        body->velocity[0] += body->acceleration[0] * global.time.delta;
+        body->velocity[1] += body->acceleration[1] * global.time.delta;
+        body->quadptr->pos[0] += body->velocity[0] * global.time.delta;
+        body->quadptr->pos[1] += body->velocity[1] * global.time.delta;
+
+    }
 }
 
 //init a body with physics properties
-size_t physicsBodyCreate(vec2 pos, vec2 size,type t) {    
+size_t physicsBodyCreate(struct Quad* quadptr,vec2 pos, vec2 size,type t) {    
     struct Body body = {
 	.aabb = {
 	    .coords = {pos[0],pos[1]},
@@ -40,8 +40,9 @@ size_t physicsBodyCreate(vec2 pos, vec2 size,type t) {
 	.velocity = {0,0},
 	.onCollision = NULL,
 	.type = t,
+	.quadptr = quadptr,
 //if i ever think of adding gravity but who knows	
-//.gravity  = 9.8f,
+//.gravity  = 9.80665f,
     };
 
     //attempt to append the newly created body to the list of bodies

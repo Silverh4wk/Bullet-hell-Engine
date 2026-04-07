@@ -1,25 +1,61 @@
-
 #include <glad/glad.h>
 #include <SDL3/SDL.h>
 #include "../global.h"
 #include "../render.h"
 #include "render_internal.h"
+#include "../global.h"
+#include "string.h"
 
+#define MAX_BATCHES 64
+#define MAX_INSTANCES_PER_BATCH 100000
+    
 static struct RenderStateInternal state = {0};
 
+//ring buffer 
+static struct InstanceData* instance_buffer = NULL;
+static size_t instance_capacity = 0;
+static size_t instance_used = 0;
+
+
+static void
+beginFrame(void) { instance_used = 0; }
+
+static struct InstanceData*
+allocateInstances(size_t count) {
+    // Grow the buffer (if it ever happen or is needed)
+    if (instance_used + count > instance_capacity) {
+        size_t new_cap = (instance_used + count) * 2;
+        instance_buffer = realloc(instance_buffer, new_cap * sizeof(struct InstanceData));
+        instance_capacity = new_cap;
+    }
+    
+    struct InstanceData* ptr = &instance_buffer[instance_used];
+    instance_used += count;
+    return ptr;
+}
+
+
+static void
+renderInitBatches(int max_batches, int instances_per_batch) {
+    state.batchCount = 0;
+    for (int i = 0; i < max_batches; i++) {
+        state.batches[i].instances = malloc(instances_per_batch * sizeof(struct InstanceData));
+        state.batches[i].capacity = instances_per_batch;
+        state.batches[i].count = 0;
+        state.batches[i].texture = 0;
+    }
+}
 
 
 void
 renderInit(void)
 {
- //the following attrb must be set before creating a window
+    renderInitBatches(MAX_BATCHES, MAX_INSTANCES_PER_BATCH);
+    //the following attrb must be set before creating a window
     
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,3);
-
-    int i ;
-    float x, y;
     
     // init video and display mode... also controller
     if (!(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO | SDL_INIT_JOYSTICK))) {
@@ -50,23 +86,20 @@ renderInit(void)
     renderInitQuad(&state,&state.vao_quad,&state.vbo_quad,&state.ebo_quad);
     renderInitShaders(&state);
     renderInitColorTexture(&state.texture_color);
-
-state.batchCount = 0;
-    for (int i = 0; i < 64; i++) {
-        state.batches[i].instances = NULL;
-        state.batches[i].count = 0;
-        state.batches[i].capacity = 0;}    
 };
+
+
+
 
 
     // 3 buffers make up what u see: color, depth and the stencil buffer 
 void
 renderBegin(void) {
+    beginFrame();
     glClearColor(0.08,0.1,0.1,1);
     glClear(GL_COLOR_BUFFER_BIT);
 
     //reset batches count for each frame
-    int prevBatchCount = state.batchCount;
     for (int i = 0; i < state.batchCount; i++) {
         state.batches[i].count = 0;
     }
@@ -80,7 +113,6 @@ renderEnd(void) {
         if (batch->count > 0) {
             renderDrawInstances(batch->texture, batch->instances, batch->count);
         }
-        // Do not free memory, just reset count next frame
     }
 
     SDL_GL_SwapWindow(global.render.window);   
@@ -91,6 +123,8 @@ void renderSubmitQuad(struct Quad* quad) {
     GLuint tex = quad->texture ? quad->texture : state.texture_color;
 
     // Find existing batch with same texture
+    if(state.batchCount >= MAX_BATCHES)
+	ERROR_EXIT("Exceeded MAX_BATCHES: %d... (increase max batches capacity) \n", MAX_BATCHES)
     int batchIdx = -1;
     for (int i = 0; i < state.batchCount; i++) {
         if (state.batches[i].texture == tex) {
@@ -102,28 +136,28 @@ void renderSubmitQuad(struct Quad* quad) {
     // If not found, create a new batch
     if (batchIdx == -1) {
         batchIdx = state.batchCount++;
-        struct Batch* newBatch = &state.batches[batchIdx];
-        newBatch->texture = tex;
-        newBatch->count = 0;
-        newBatch->capacity = 1024; // initial capacity
-        newBatch->instances = malloc(newBatch->capacity * sizeof(struct InstanceData));
+        struct Batch* new_batch = &state.batches[batchIdx];
+        new_batch->texture = tex;
+        new_batch->count = 0;
     }
 
     struct Batch* batch = &state.batches[batchIdx];
 
-    // make sure theres enough space, if not double
+    // make sure theres enough space, if not double and reallocate memory
     if (batch->count >= batch->capacity) {
-        batch->capacity *= 2;
-        batch->instances = realloc(batch->instances, batch->capacity * sizeof(struct InstanceData));
+	// for now, if exceed the global capacity, either change that or log and exit
+        ERROR_EXIT("Batch is full, exceeded global capacity: %d... (increase max global capacity) \n" , MAX_INSTANCES_PER_BATCH)
+	    return;
     }
 
-    // Build instance data from quad
+    // Build instance data from quad into batch array
     struct InstanceData* inst = &batch->instances[batch->count++];
     mat4x4_identity(inst->model);
     mat4x4_translate(inst->model, quad->pos[0], quad->pos[1], 0.0f);
     mat4x4_scale_aniso(inst->model, inst->model, quad->size[0], quad->size[1], 1.0f);
     memcpy(inst->color, quad->color, sizeof(vec4));
 }
+
 
 
 void
@@ -147,15 +181,17 @@ void renderDrawQuadsInstanced(struct Quad* quads, size_t count) {
         // grow to at least `count` 
         size_t newcap = state.instance_capacity;
         while (newcap < count) newcap *= 2;
-        state.instance_capacity = newcap;
-
+        state.instance_capacity = newcap;	
         glBindBuffer(GL_ARRAY_BUFFER, state.instance_vbo);
         glBufferData(GL_ARRAY_BUFFER, state.instance_capacity * sizeof(struct InstanceData), NULL, GL_DYNAMIC_DRAW);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
     // prepare CPU-side instances
-    struct InstanceData *instances = malloc(count * sizeof(struct InstanceData));
+    struct InstanceData *instances = allocateInstances(count);
+    if(!instances)
+	ERROR_EXIT("RENDER ERROR "
+		     "FAILED to allocate instances \n")
     for (size_t i = 0; i < count; ++i) {
         struct Quad *q = &quads[i];
 
@@ -164,8 +200,6 @@ void renderDrawQuadsInstanced(struct Quad* quads, size_t count) {
         mat4x4_translate(model, q->pos[0], q->pos[1], 0.0f);
         mat4x4_scale_aniso(model, model, q->size[0], q->size[1], 1.0f);
 
-        // copy model into instance 
-        float *m = &model[0][0];
 	memcpy(instances[i].model, model, sizeof(mat4x4));
 	
         // copy color
@@ -174,7 +208,6 @@ void renderDrawQuadsInstanced(struct Quad* quads, size_t count) {
 
     // upload the instance data 
     glBindBuffer(GL_ARRAY_BUFFER, state.instance_vbo);
-    glBufferData(GL_ARRAY_BUFFER, state.instance_capacity * sizeof(struct InstanceData), NULL, GL_DYNAMIC_DRAW); // orphan
     glBufferSubData(GL_ARRAY_BUFFER, 0, count * sizeof(struct InstanceData), instances);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -187,12 +220,12 @@ void renderDrawQuadsInstanced(struct Quad* quads, size_t count) {
     glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, (GLsizei)count);
 
     glBindVertexArray(0);
-    free(instances);
 }
 
 
 
-void renderDrawInstances(GLuint texture,struct InstanceData* instances, size_t count) {
+static void
+renderDrawInstances(GLuint texture,struct InstanceData* instances, size_t count) {
     if (count == 0) return;
 
     // make sure the GPU buffer is large enough
@@ -200,13 +233,13 @@ void renderDrawInstances(GLuint texture,struct InstanceData* instances, size_t c
         size_t newcap = state.instance_capacity;
         while (newcap < count) newcap *= 2;
         state.instance_capacity = newcap;
-    }
-
+	glBindBuffer(GL_ARRAY_BUFFER, state.instance_vbo);
+        glBufferData(GL_ARRAY_BUFFER, state.instance_capacity * sizeof(struct InstanceData), NULL, GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        }
+    
     // upload instance data
     glBindBuffer(GL_ARRAY_BUFFER, state.instance_vbo);
-    //maybe instead of orphanining every draw call, just do it once using MAX_INSTANCE 
-    glBufferData(GL_ARRAY_BUFFER, state.instance_capacity * sizeof(struct InstanceData),
-                 NULL, GL_DYNAMIC_DRAW); // orphan
     glBufferSubData(GL_ARRAY_BUFFER, 0, count * sizeof(struct InstanceData), instances);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -218,7 +251,7 @@ void renderDrawInstances(GLuint texture,struct InstanceData* instances, size_t c
     glBindVertexArray(0);
 }
 
-//(reminder to fix this)
+//render the visual representation of AABB bodies 
 void renderAABB(AABB* aabb, vec4 color) {
     if (!aabb) return;
 
@@ -258,4 +291,23 @@ drawAllAABB(void) {
 	renderAABB(&body->aabb,wireColor);
         
     }
+}
+
+
+
+void renderShutdown(void) {
+    // free batch instance arrays (double free or something is occuring at the moment. fix this )
+    /* for (int i = 0; i < MAX_BATCHES; i++) { */
+    /*     free(state.batches[i].instances); */
+    /* } */
+    // free ring buffer
+    free(instance_buffer);
+    // delete GL resources
+    glDeleteProgram(state.shader_default);
+    glDeleteTextures(1, &state.texture_color);
+    glDeleteVertexArrays(1, &state.vao_quad);
+    glDeleteBuffers(1, &state.vbo_quad);
+    glDeleteBuffers(1, &state.ebo_quad);
+    glDeleteBuffers(1, &state.instance_vbo);
+    free(state.batches->instances);
 }

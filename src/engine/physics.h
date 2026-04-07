@@ -10,13 +10,13 @@ struct Body;
 // collision callback type
 typedef void (*CollisionCallback)(struct Body* self, struct Body* other);
 
-// struct that hold the physical "body" or state of an object
 
 typedef enum {
   BODY_PLAYER,
   BODY_BULLET,
 } type;
 
+// struct that hold the physical "body" or state of an object
 struct Body
 {
     AABB aabb;
@@ -26,6 +26,7 @@ struct Body
     CollisionCallback onCollision; // a function pointer
     int  active;
     type type;
+    struct Quad* quadptr; //points back to the quad that its holdoing i guess (temp fix)
 };
 
 void
@@ -35,7 +36,7 @@ void
 physicsUpdate(void);
 
 size_t
-physicsBodyCreate(vec2 pos, vec2 size,type t);
+physicsBodyCreate(struct Quad* quadptr,vec2 pos, vec2 size,type t);
 
 struct Body *
 physicsBodyGet(size_t index);

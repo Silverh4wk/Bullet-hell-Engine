@@ -2,10 +2,18 @@
 #include <math.h>
 
 #include "aabb.h"
+#include "../engine/pool_allocator.h"
+
+static struct PoolAllocator AABB_pool;
+
+void initLinkedListPool(void)
+    {
+	initPool(&AABB_pool, sizeof(AABB*), 256);
+    }
 
 AABB*
 aabb_new(float x, float y, float hW, float hH) {
-	AABB* a = malloc(sizeof(AABB));
+	AABB* a = allocatePool(&AABB_pool);
 	a->coords[0] = x;
 	a->coords[1] = y;
 	a->dims[0] = hW;

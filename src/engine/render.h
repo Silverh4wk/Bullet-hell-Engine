@@ -34,7 +34,6 @@ renderEnd(void);
 
 void
 renderSubmitQuad(struct Quad *quad);
-
 //render a quad to the screen
 void renderQuad(struct Quad* quad);
 
@@ -53,4 +52,6 @@ renderDrawQuadsInstanced(struct Quad* quads, size_t count);
 void
 drawAllAABB(void);
 
+void
+renderShutdown(void);
 #endif

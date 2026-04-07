@@ -19,6 +19,8 @@
 #include "engine/dataStructs.h" //temp name
 
 
+#define BODY_COUNT 20000
+static struct Array_List* all_quads = NULL;
 
 //(TESTING)
 // Collision callback for player
@@ -35,7 +37,28 @@ void bullet_onCollision(struct Body* self, struct Body* other) {
         self->active = false;
     }
 }
-#define BODY_COUNT 4096*2
+
+
+static void spawn_bouncy_balls(int count) {
+    for (int i = 0; i < count; i++) {
+        vec2 pos = { rand() % global.render.width, rand() % global.render.height };
+        vec2 size = { 8, 16 };
+        vec4 color = { (float)rand() / RAND_MAX, (float)rand() / RAND_MAX, (float)rand() / RAND_MAX, 1.0f };
+
+        struct QuadUnion ball = QuadCreate(pos, size, &color, BODY_BULLET, true);
+        struct Quad* q = ball.quad;
+        if (!q || !q->body) continue;
+
+        float angle = ((float)rand() / (float)RAND_MAX) * 2*PI; 
+        float speed = 50.0f + (float)(rand() % 200);
+        q->body->velocity[0] = cosf(angle) * speed;
+        q->body->velocity[1] = sinf(angle) * speed;
+        q->body->onCollision = NULL;
+        q->body->active = true;
+        arrayListAppend(all_quads, &q);
+    }
+}
+
 
 static float fps_timer = 0.0f;
 static int   fps_frames = 0;
@@ -177,7 +200,9 @@ int main(int argc, char *argv[])
     physicsInit();
     renderInit();
     InitEnginePools();
-    // (TODO) Figure out what to do with this later
+    all_quads = arrayListCreate(sizeof(struct Quad*), BODY_COUNT + 10);
+    spawn_bouncy_balls(BODY_COUNT);
+// (TODO) Figure out what to do with this later
     const char *screenText = "Plug in a joystick, please.";
 
     vec4 bulletColor = {1.0f, 0.0f, 1.0f, 1.0f}; 
@@ -189,7 +214,7 @@ int main(int argc, char *argv[])
 
      // Create a bullet body moving toward player
     struct QuadUnion bullet = QuadCreate((vec2){100,300}, (vec2){8,8}, &bulletColor,  BODY_PLAYER, true);
-    bullet.quad->body->velocity[0] = 200.0f;  // move right 200 pixels/sec
+    bullet.quad->body->velocity[0] = 200.0f; 
     bullet.quad->body->velocity[1] = 0;
     bullet.quad->body->onCollision = bullet_onCollision;
     bullet.quad->body->active = true;
@@ -233,14 +258,23 @@ int main(int argc, char *argv[])
 	QuadMove(player.quad, pos[0],pos[1] );
 	//rendering block begin
 	renderBegin();
+	for (size_t i = 0; i < all_quads->len; i++) {
+	    struct Quad** qptr = (struct Quad**) arrayListGet(all_quads, i);
+	    if (*qptr) renderSubmitQuad(*qptr);
+    
+            }
 	renderSubmitQuad(bullet.quad);
+
 	renderSubmitQuad(player.quad);
+	
 	// for testing, probably should put it under a flag 
-	if(toggleHitBoxVisual)
-	    drawAllAABB();
 	
         renderEnd();
 	//rendering block end
+
+        if(toggleHitBoxVisual)
+	    drawAllAABB();
+	
 	
         time_update_late();
     }
@@ -257,7 +291,9 @@ void Terminate() {
     }
     
     // Quit
+    renderShutdown();
     SDL_DestroyWindow(global.render.window);
+
     SDL_Quit();
 }
 

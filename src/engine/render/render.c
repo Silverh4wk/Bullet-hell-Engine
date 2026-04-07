@@ -154,6 +154,7 @@ void renderSubmitQuad(struct Quad* quad) {
     struct InstanceData* inst = &batch->instances[batch->count++];
     mat4x4_identity(inst->model);
     mat4x4_translate(inst->model, quad->pos[0], quad->pos[1], 0.0f);
+    mat4x4_rotate_Z(inst->model, inst->model, quad->rotation_angle);   // in radians
     mat4x4_scale_aniso(inst->model, inst->model, quad->size[0], quad->size[1], 1.0f);
     memcpy(inst->color, quad->color, sizeof(vec4));
 }
@@ -193,17 +194,18 @@ void renderDrawQuadsInstanced(struct Quad* quads, size_t count) {
 	ERROR_EXIT("RENDER ERROR "
 		     "FAILED to allocate instances \n")
     for (size_t i = 0; i < count; ++i) {
-        struct Quad *q = &quads[i];
+        struct Quad *quad = &quads[i];
 
         mat4x4 model;
         mat4x4_identity(model);
-        mat4x4_translate(model, q->pos[0], q->pos[1], 0.0f);
-        mat4x4_scale_aniso(model, model, q->size[0], q->size[1], 1.0f);
+        mat4x4_translate(model, quad->pos[0], quad->pos[1], 0.0f);
+	mat4x4_rotate_Z(model, model, quad->rotation_angle);   // in radians
+        mat4x4_scale_aniso(model, model, quad->size[0], quad->size[1], 1.0f);
 
 	memcpy(instances[i].model, model, sizeof(mat4x4));
 	
         // copy color
-        for (int c = 0; c < 4; ++c) instances[i].color[c] = q->color[c];
+        for (int c = 0; c < 4; ++c) instances[i].color[c] = quad->color[c];
     }
 
     // upload the instance data 

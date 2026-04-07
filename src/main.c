@@ -19,7 +19,7 @@
 #include "engine/dataStructs.h" //temp name
 
 
-#define BODY_COUNT 20000
+#define BODY_COUNT 20
 static struct Array_List* all_quads = NULL;
 
 //(TESTING)
@@ -108,6 +108,7 @@ global_variable int toggleHitBoxVisual = 0;
 
 global_variable vec2 pos;
 global_variable vec2 qsize;
+global_variable real32 angle;
 
 
 //MOVE THIS (soon just wait) 
@@ -115,6 +116,7 @@ static void input_handle(void) {
     if (global.input.left == KEY_PRESSED || global.input.left == KEY_HELD)
     {
 	pos[0] -= 500 * global.time.delta;
+	angle += 0.1;
 	printf("A \n");}
 	
     if (global.input.right == KEY_PRESSED || global.input.right == KEY_HELD)
@@ -210,7 +212,8 @@ int main(int argc, char *argv[])
     struct QuadUnion player = QuadCreate((vec2){400,300}, (vec2){64,64}, NULL, BODY_PLAYER,true);
     player.quad->body->onCollision = player_onCollision;
     player.quad->body->active = true;
-
+    ;
+    
 
      // Create a bullet body moving toward player
     struct QuadUnion bullet = QuadCreate((vec2){100,300}, (vec2){8,8}, &bulletColor,  BODY_PLAYER, true);
@@ -249,7 +252,7 @@ int main(int argc, char *argv[])
 	    }
 	}
 	
-	
+	player.quad->rotation_angle = angle;
 	inputUpdate();
 	input_handle();
 	physicsUpdate();

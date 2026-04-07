@@ -8,11 +8,13 @@
 #include "../engine/physics.h"
 
 #define PI 3.14159
-
+ 
+#define RotationMatrix(Angle) () 
 struct Quad {
     vec2 pos;
     vec2 size;
     vec4 color;
+    real32 rotation_angle;
     struct Body* body;
     GLuint texture;
     bool physics_enabled;

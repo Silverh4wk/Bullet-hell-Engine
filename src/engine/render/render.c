@@ -118,9 +118,9 @@ renderEnd(void) {
     SDL_GL_SwapWindow(global.render.window);   
 };
 
-void renderSubmitQuad(struct Quad* quad) {
+void renderSubmitShape(struct Shape* shape) {
 
-    GLuint tex = quad->texture ? quad->texture : state.texture_color;
+    GLuint tex = shape->texture ? shape->texture : state.texture_color;
 
     // Find existing batch with same texture
     if(state.batchCount >= MAX_BATCHES)
@@ -153,10 +153,10 @@ void renderSubmitQuad(struct Quad* quad) {
     // Build instance data from quad into batch array
     struct InstanceData* inst = &batch->instances[batch->count++];
     mat4x4_identity(inst->model);
-    mat4x4_translate(inst->model, quad->pos[0], quad->pos[1], 0.0f);
-    mat4x4_rotate_Z(inst->model, inst->model, quad->rotation_angle);   // in radians
-    mat4x4_scale_aniso(inst->model, inst->model, quad->size[0], quad->size[1], 1.0f);
-    memcpy(inst->color, quad->color, sizeof(vec4));
+    mat4x4_translate(inst->model, shape->pos[0], shape->pos[1], 0.0f);
+    mat4x4_rotate_Z(inst->model, inst->model, shape->data.quad.rotation_angle);   // in radians
+    mat4x4_scale_aniso(inst->model, inst->model, shape->data.quad.size[0], shape->data.quad.size[1], 1.0f);
+    memcpy(inst->color, shape->color, sizeof(vec4));
 }
 
 
@@ -174,7 +174,7 @@ renderQuad(struct Quad* quad) {
 
 };
 
-void renderDrawQuadsInstanced(struct Quad* quads, size_t count) {
+void renderDrawShapeInstanced(struct Shape* shape, size_t count) {
     if (count == 0) return;
 
     // grow GPU buffer if needed
@@ -194,18 +194,18 @@ void renderDrawQuadsInstanced(struct Quad* quads, size_t count) {
 	ERROR_EXIT("RENDER ERROR "
 		     "FAILED to allocate instances \n")
     for (size_t i = 0; i < count; ++i) {
-        struct Quad *quad = &quads[i];
+        struct Shape *shape = &shape[i];
 
         mat4x4 model;
         mat4x4_identity(model);
-        mat4x4_translate(model, quad->pos[0], quad->pos[1], 0.0f);
-	mat4x4_rotate_Z(model, model, quad->rotation_angle);   // in radians
-        mat4x4_scale_aniso(model, model, quad->size[0], quad->size[1], 1.0f);
+        mat4x4_translate(model, shape->pos[0], shape->pos[1], 0.0f);
+	mat4x4_rotate_Z(model, model, shape->data.quad.rotation_angle);   // in radians
+        mat4x4_scale_aniso(model, model, shape->data.quad.size[0], shape->data.quad.size[1], 1.0f);
 
 	memcpy(instances[i].model, model, sizeof(mat4x4));
 	
         // copy color
-        for (int c = 0; c < 4; ++c) instances[i].color[c] = quad->color[c];
+        for (int c = 0; c < 4; ++c) instances[i].color[c] = shape->color[c];
     }
 
     // upload the instance data 

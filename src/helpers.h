@@ -7,13 +7,14 @@
 
 
 
-struct Quad;
+struct Shape;
 
 int32 pseudoRand(int32 n);
 void setVec2(vec2 *a, real32 x, real32 y);
 void setVec3(vec3 *a, real32 x, real32 y, real32 z);
 void setVec4(vec4 *a, real32 x, real32 y, real32 z, real32 l);
-void setQuad(struct Quad *quad ,vec2 pos, vec2 size, vec4 *color);
+void setQuad(struct Shape *quad ,vec2 pos, vec2 size, vec4 *color);
+void setCircle(struct Shape *circle, vec2 pos, real32 radius, vec4 *color);
 
 #define global_variable static
 

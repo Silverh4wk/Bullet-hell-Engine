@@ -30,11 +30,21 @@ setVec4(vec4*a, real32 x, real32 y, real32 z, real32 l) {
 
 //Set quad data 
 void
-setQuad(struct Quad *quad, vec2 pos, vec2 size, vec4 *color)
+setQuad(struct Shape *quad, vec2 pos, vec2 size, vec4 *color)
 {
     setVec2(&quad->pos, pos[0], pos[1]);
-    setVec2(&quad->size, size[0], size[1]);
+    setVec2(&quad->data.quad.size, size[0], size[1]);
     setVec4(&quad->color,(*color)[0], (*color)[1], (*color)[2], (*color)[3]);
     quad->texture = 0;
 };
+    
+//Set circle data 
+void
+setCircle(struct Shape *circle, vec2 pos, real32 radius, vec4 *color)
+{
+    setVec2(&circle->pos, pos[0], pos[1]);
+    setVec4(&circle->color,(*color)[0], (*color)[1], (*color)[2], (*color)[3]);
+    circle->data.circle.radius = radius;
+    circle->texture = 0;
+    };
     

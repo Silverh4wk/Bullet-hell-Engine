@@ -1,9 +1,9 @@
 #ifndef PHYSICS_H
 #define PHYSICS_H
 
-#include "aabb.h"
+#include "linmath.h"
 #include "array_list.h"
-
+#include "AABB.h"
 
 struct Body;
 
@@ -26,7 +26,7 @@ struct Body
     CollisionCallback onCollision; // a function pointer
     int  active;
     type type;
-    struct Quad* quadptr; //points back to the quad that its holdoing i guess (temp fix)
+    struct Shape* sptr; //points back to the shape that its holdoing i guess (temp fix)
 };
 
 void
@@ -36,7 +36,7 @@ void
 physicsUpdate(void);
 
 size_t
-physicsBodyCreate(struct Quad* quadptr,vec2 pos, vec2 size,type t);
+physicsBodyCreate(struct Shape* sptr,vec2 pos, vec2 size,type t);
 
 struct Body *
 physicsBodyGet(size_t index);

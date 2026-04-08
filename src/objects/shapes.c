@@ -1,21 +1,20 @@
 #include <stdlib.h>
 
 #include "shapes.h"
-#include "../engine/pool_allocator.h"
 #include "../helpers.h"
+#include "../engine/pool_allocator.h"
 
-
-static struct PoolAllocator quad_pool;
+static struct PoolAllocator shape_pool;
 
 
 void
-initQuadPool(void)
+initShapesPool(void)
     {
-	initPool(&quad_pool, sizeof(struct Quad), 256);
+	initPool(&shape_pool, sizeof(struct Shape), 256);
     }
 
-struct QuadUnion
-QuadCreate (vec2 pos, vec2 size , vec4* color, type t,bool t_physics)
+struct ShapeUnion
+shapeQuadCreate(vec2 pos, vec2 size , vec4* color, type t,bool t_physics)
  {
      // if color is NULL
      vec4 c;
@@ -27,8 +26,8 @@ QuadCreate (vec2 pos, vec2 size , vec4* color, type t,bool t_physics)
 	 color =&c ;
      }
 
-     struct QuadUnion r ;
-     r.quad = NULL;
+     struct ShapeUnion r ;
+     r.shape = NULL;
 
      //check if param are ok
      //alloc quad
@@ -37,19 +36,19 @@ QuadCreate (vec2 pos, vec2 size , vec4* color, type t,bool t_physics)
 
 
     if (size[0] <= 0.0f || size[1] <= 0.0f) {
-	r.result = QUAD_ERR_INVALID_SIZE; 
-	return  r;
+	r.result = SHAPE_ERR_INVALID_SIZE; 
+	ERROR_RETURN(r, "Failed to create shape, SHAPE_ERROR: SHAPE_ERR_INVALID_SIZE %d \n", r.result)
     }
 
     // just a double check if anything is out of the ordinary
     if (!isfinite(size[0]) || !isfinite(size[1]) ||
         !isfinite(pos[0]) || !isfinite(pos[1]) ||
          !isfinite(*color[0]) || !isfinite(*color[1]) || !isfinite(*color[2]) || !isfinite(*color[3])) {
-	r.result = QUAD_ERR_INVALID_COLOR; 
-	return r ;
+	r.result = SHAPE_ERR_INVALID_COLOR; 
+	ERROR_RETURN(r, "Failed to create shape, SHAPE_ERROR: SHAPE_ERR_INVALID_COLOR %d \n", r.result)
     }
 
-    struct Quad *quad = allocatePool(&quad_pool);
+    struct Shape *quad = allocatePool(&shape_pool);
     
     // Fill hitbox stuff
     // Add to the body list
@@ -67,17 +66,77 @@ QuadCreate (vec2 pos, vec2 size , vec4* color, type t,bool t_physics)
     setQuad(quad, pos, size, color);
     
     if (!quad){
-	r.result = QUAD_ERR_INTERNAL; 
-	return r ;}
+	r.result = SHAPE_ERR_INTERNAL; 
+	ERROR_RETURN(r, "Failed to create shape, SHAPE_ERROR: SHAPE_ERR_INTERNAL %d \n", r.result)}
 
-    r.quad = quad;
+    r.shape = quad;
+    return r;
+ }
+
+
+struct ShapeUnion
+shapeCircleCreate(vec2 pos, real32 radius, vec4* color, type t,bool t_physics)
+ {
+     // if color is NULL
+     vec4 c;
+     
+     if(color == NULL)
+     {
+	 //#B561ED 
+	 setVec4(&c, 181, 97, 237, 1.0f);
+	 color =&c ;
+     }
+
+     struct ShapeUnion r ;
+     r.shape = NULL;
+
+     //check if param are ok
+     //alloc quad
+     //set quad data
+     //return result
+
+
+    if (radius <= 0.0f) {
+	r.result = SHAPE_ERR_INVALID_SIZE; 
+	ERROR_RETURN(r, "Failed to create shape, SHAPE_ERROR: SHAPE_ERR_INVALID_SIZE %d \n", r.result)
+    }
+
+    // just a double check if anything is out of the ordinary
+    if (!isfinite(radius) ||
+        !isfinite(pos[0]) || !isfinite(pos[1]) ||
+         !isfinite(*color[0]) || !isfinite(*color[1]) || !isfinite(*color[2]) || !isfinite(*color[3])) {
+	r.result = SHAPE_ERR_INVALID_COLOR; 
+	ERROR_RETURN(r, "Failed to create shape, SHAPE_ERROR: SHAPE_ERR_INVALID_COLOR %d \n", r.result)
+    }
+
+    struct Shape *circle = allocatePool(&shape_pool);
+    
+    // Fill hitbox stuff
+    // Add to the body list
+    // Return its index
+
+    //if physics body is set to true
+    //create physics body and attach it to the quad
+    if(t_physics == true)
+    {
+	vec2 size = {radius, radius};
+	size_t idx = physicsBodyCreate(circle,pos, size,t);
+	circle->body = physicsBodyGet(idx);
+    }
+    
+    // Fill quad vars
+    setCircle(circle,pos, radius, color);
+    if (!circle){
+	r.result = SHAPE_ERR_INTERNAL; 
+	ERROR_RETURN(r, "Failed to create shape, SHAPE_ERROR: SHAPE_ERR_INTERNAL %d \n", r.result)}
+
+    r.shape = circle;
     return r;
  }
 
 
 
-
-void QuadMove(struct Quad* quad, real32 posx, real32 posy)
+void shapeMove(struct Shape* quad, real32 posx, real32 posy)
 {
     setVec2(&quad->pos, posx, posy);
 

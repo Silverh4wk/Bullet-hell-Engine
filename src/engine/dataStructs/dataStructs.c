@@ -4,7 +4,7 @@
 #include "../Quad_trees.h"
 void InitEnginePools(void)
 {
-    initQuadPool();
+    initShapesPool();
     initLinkedListPool();
-    initQuadtreePool();
+    //initQuadtreePool();
     }

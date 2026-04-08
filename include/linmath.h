@@ -240,6 +240,7 @@ LINMATH_H_FUNC void mat4x4_rotate(mat4x4 R, mat4x4 const M, float x, float y, fl
 		mat4x4_dup(R, M);
 	}
 }
+
 LINMATH_H_FUNC void mat4x4_rotate_X(mat4x4 Q, mat4x4 const M, float angle)
 {
 	float s = sinf(angle);

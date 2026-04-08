@@ -5,21 +5,21 @@
 
 *** DONE Add renderShutdown() to free batch instance
 
-*** TODO [#A] Add rotation support to Quad 
+*** DONE Add rotation support to Quad 
 
-*** TODO Fix renderAABB to work without breaking batched state – draw after batching or as line
+*** DONE Fix renderAABB to work without breaking batched state – draw after batching or as line
 
-*** TODO [#C] Add layer/Z‑ordering
+*** TODO [#A] Add camera/view transform 
 
-*** TODO Implement persistent mapped buffer for high bullet counts 
+*** TODO [#A] Add circle rendering (quad + fragment shader discard or triangle)
 
-*** TODO Add circle rendering (quad + fragment shader discard or triangle
+*** TODO [#B] Add layer/Z‑ordering
 
-*** TODO Add camera/view transform 
+*** TODO [#B] Implement persistent mapped buffer for high bullet counts 
 
-*** TODO Add simple text output (bitmap font via instanced quads) for debug
+*** TODO [#C] Add simple text output (bitmap font via instanced quads) for debug
 
-*** TODO Add frustum culling to skip off‑screen
+*** TODO [#C] Add frustum culling to skip off‑screen
 
 
 
@@ -29,6 +29,8 @@
 * TODO Window events
 
 ** TODO Handle Resize
+
+** TODO [#A] fix the hitbox rendering issues
 
 ** DONE Store updated width/height in a global or struct WindowDimensions (why? idk yet really maybe ill be able to use it later on something)(done).
 
@@ -40,11 +42,7 @@
 
 ** TODO [#C] Pause the game/editor loop if minimized or unfocused (important) (to be done).
 
-** TODO Handle Close and saving of game data (Dont have a game yet)
-
-** TODO fix the hitbox rendering issues
-
-
+** TODO [#B] Handle Close and saving of game data (Dont have a game yet)
 
 ** TODO Input
 keyboard events like wasdown and isdown should properly be handled and logged

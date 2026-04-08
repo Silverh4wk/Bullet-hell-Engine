@@ -19,7 +19,7 @@
 #include "engine/dataStructs.h" //temp name
 
 
-#define BODY_COUNT 20
+#define BODY_COUNT 10000
 static struct Array_List* all_quads = NULL;
 
 //(TESTING)
@@ -45,8 +45,8 @@ static void spawn_bouncy_balls(int count) {
         vec2 size = { 8, 16 };
         vec4 color = { (float)rand() / RAND_MAX, (float)rand() / RAND_MAX, (float)rand() / RAND_MAX, 1.0f };
 
-        struct QuadUnion ball = QuadCreate(pos, size, &color, BODY_BULLET, true);
-        struct Quad* q = ball.quad;
+        struct ShapeUnion ball = shapeQuadCreate(pos, size, &color, BODY_BULLET, true);
+        struct Shape* q = ball.shape;
         if (!q || !q->body) continue;
 
         float angle = ((float)rand() / (float)RAND_MAX) * 2*PI; 
@@ -209,18 +209,18 @@ int main(int argc, char *argv[])
 
     vec4 bulletColor = {1.0f, 0.0f, 1.0f, 1.0f}; 
     
-    struct QuadUnion player = QuadCreate((vec2){400,300}, (vec2){64,64}, NULL, BODY_PLAYER,true);
-    player.quad->body->onCollision = player_onCollision;
-    player.quad->body->active = true;
+    struct ShapeUnion player = shapeQuadCreate((vec2){400,300}, (vec2){64,64}, NULL, BODY_PLAYER,true);
+    player.shape->body->onCollision = player_onCollision;
+    player.shape->body->active = true;
     ;
     
 
      // Create a bullet body moving toward player
-    struct QuadUnion bullet = QuadCreate((vec2){100,300}, (vec2){8,8}, &bulletColor,  BODY_PLAYER, true);
-    bullet.quad->body->velocity[0] = 200.0f; 
-    bullet.quad->body->velocity[1] = 0;
-    bullet.quad->body->onCollision = bullet_onCollision;
-    bullet.quad->body->active = true;
+    struct ShapeUnion bullet = shapeQuadCreate((vec2){100,300}, (vec2){8,8}, &bulletColor,  BODY_PLAYER, true);
+    bullet.shape->body->velocity[0] = 200.0f; 
+    bullet.shape->body->velocity[1] = 0;
+    bullet.shape->body->onCollision = bullet_onCollision;
+    bullet.shape->body->active = true;
     
     //main game loop
     while (GlobalRunning) {
@@ -252,23 +252,23 @@ int main(int argc, char *argv[])
 	    }
 	}
 	
-	player.quad->rotation_angle = angle;
+	player.shape->data.quad.rotation_angle = angle;
 	inputUpdate();
 	input_handle();
 	physicsUpdate();
 	broadPhaseResolve(); 
 	physicsRemoveInactiveBodies();
-	QuadMove(player.quad, pos[0],pos[1] );
+	shapeMove(player.shape, pos[0],pos[1] );
 	//rendering block begin
 	renderBegin();
 	for (size_t i = 0; i < all_quads->len; i++) {
-	    struct Quad** qptr = (struct Quad**) arrayListGet(all_quads, i);
-	    if (*qptr) renderSubmitQuad(*qptr);
+	    struct Shape** qptr = (struct Shape**) arrayListGet(all_quads, i);
+	    if (*qptr) renderSubmitShape(*qptr);
     
             }
-	renderSubmitQuad(bullet.quad);
+	renderSubmitShape(bullet.shape);
 
-	renderSubmitQuad(player.quad);
+	renderSubmitShape(player.shape);
 	
 	// for testing, probably should put it under a flag 
 	

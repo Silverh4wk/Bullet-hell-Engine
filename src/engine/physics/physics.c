@@ -5,6 +5,7 @@
 #include "physics_internal.h"
 #include "spatial_hashing.h"
 
+
 static struct PhysicsStateInternal state;
 
 void physicsInit(void)
@@ -24,23 +25,23 @@ void physicsUpdate(void)
         body = (struct Body*) arrayListGet(state.body_list, i);
         body->velocity[0] += body->acceleration[0] * global.time.delta;
         body->velocity[1] += body->acceleration[1] * global.time.delta;
-        body->quadptr->pos[0] += body->velocity[0] * global.time.delta;
-        body->quadptr->pos[1] += body->velocity[1] * global.time.delta;
+        body->sptr->pos[0] += body->velocity[0] * global.time.delta;
+        body->sptr->pos[1] += body->velocity[1] * global.time.delta;
 
     }
 }
 
 //init a body with physics properties
-size_t physicsBodyCreate(struct Quad* quadptr,vec2 pos, vec2 size,type t) {    
+size_t physicsBodyCreate(struct Shape* sptr,vec2 pos, vec2 size,type t) {    
     struct Body body = {
 	.aabb = {
 	    .coords = {pos[0],pos[1]},
-	    .dims ={ size[0]/2,size[1]/2},
+	    .dims ={ size[0]/2,size[1]/2}, //physical body for a circle is still the same as a quad
 	},
 	.velocity = {0,0},
 	.onCollision = NULL,
 	.type = t,
-	.quadptr = quadptr,
+	.sptr = sptr,
 //if i ever think of adding gravity but who knows	
 //.gravity  = 9.80665f,
     };

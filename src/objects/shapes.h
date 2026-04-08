@@ -9,7 +9,30 @@
 
 #define PI 3.14159
  
-#define RotationMatrix(Angle) () 
+typedef enum {
+  SHAPE_QUAD,
+  SHAPE_CIRCLE
+} ShapeType;
+    
+struct Shape {
+    struct Body* body;
+    ShapeType type;
+    vec2 pos;
+    vec4 color;          
+    GLuint texture;
+    bool physics_enabled;
+    union {
+        struct {
+            vec2 size;
+            float rotation_angle;
+        } quad;
+        struct {
+            float radius;
+            float origin;  
+        } circle;
+    } data;
+};
+
 struct Quad {
     vec2 pos;
     vec2 size;
@@ -21,61 +44,56 @@ struct Quad {
 };
 
 
-enum QuadResults{
-    QUAD_OK,
-    QUAD_ERR_INVALID_SIZE,
-    QUAD_ERR_INVALID_COLOR,
-    QUAD_ERR_INTERNAL
+enum ShapeResults{
+    SHAPE_OK,
+    SHAPE_ERR_INVALID_SIZE,
+    SHAPE_ERR_INVALID_COLOR,
+    SHAPE_ERR_INTERNAL
 }  ;
 
-void
-initQuadPool(void);//initiate the object pool for quad objects
-
-struct QuadUnion {
-    enum  QuadResults result;
-    //return a potiner to the allocated object if no issues
-    struct Quad* quad;    
+struct ShapeUnion {
+    enum  ShapeResults result;
+    //return a potiner to the allocated object
+    struct Shape* shape;    
 };
+
+void
+initShapesPool(void);//initiate the object pool for quad objects
+
 
 //allocoate memorycreates the quad with the given param
 //position and size are needed but color can be NULL
 
-struct QuadUnion
-QuadCreate(vec2 pos, vec2 size , vec4* color, type t, bool t_physics);
 
+struct ShapeUnion
+shapeQuadCreate(vec2 pos, vec2 size , vec4* color, type t, bool t_physics);
+
+struct ShapeUnion
+shapeCircleCreate(vec2 pos, real32 radius , vec4* color, type t, bool t_physics);
 
 //change the position of the quad  
 void
-QuadMove(struct Quad *quad, real32 posx, real32 posy);
+shapeMove(struct Shape *shape, real32 posx, real32 posy);
 
 //set the size of the quad
 void
-QuadSetSize(struct Quad *quad, real32 width, real32 height);
+quadSetSize(struct quad *q, real32 width, real32 height);
+
+//set the size of the quad
+void
+circleSetRadius(struct Shape *shape, real32 width, real32 height);
 
 //set the hitbox size of the quad
 void
-QuadSetHitBoxSize(struct Quad *quad, real32 width, real32 height);
+quadSetHitBoxSize(struct Shape *shape, real32 width, real32 height);
 
 //set the color of the quad
 void
-QuadSetColor(struct Quad *quad, real32 c1, real32 c2, real32 c3, real32 c4) ;
+shapeSetColor(struct Shape *shape, real32 c1, real32 c2, real32 c3, real32 c4) ;
 
 //delete the quad and free the allocated memory
 void
-QuadDelete(struct Quad *quad);
+shapeDelete(struct Shape *shape);
 
 
-
-struct Circle {
-    vec2 pos;
-    vec2 diam;
-    vec4 radius;
-    struct Body* body;
-    GLuint texture;
-    bool physics_enabled;
-};
-
-
-/* struct CircleUnion */
-/* CircleCreate(pos,radius,color,physics){}     */
 #endif

@@ -1,7 +1,7 @@
 set "PROJECT_ROOT=I:\FYP"
 set "BUILD_DIR=I:\build"
 
-set "render=%PROJECT_ROOT%\src\engine\render\render.c %PROJECT_ROOT%\src\engine\render\render_init.c %PROJECT_ROOT%\src\engine\render\render_util.c"
+set "render=%PROJECT_ROOT%\src\engine\render\render.c %PROJECT_ROOT%\src\engine\render\render_init.c %PROJECT_ROOT%\src\engine\render\render_util.c %PROJECT_ROOT%\src\engine\render\camera.c"
 set "objects=%PROJECT_ROOT%\src\objects\shapes.c"
 set "io=%PROJECT_ROOT%\src\io\io.c"
 set "input=%PROJECT_ROOT%\src\engine\input.c"

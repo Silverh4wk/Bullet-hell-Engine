@@ -31,27 +31,21 @@ renderBegin(void);
 void
 renderEnd(void);
 
-
 void
 renderSubmitShape(struct Shape *shape);
-//render a shape to the screen 
+//render a shape to the screen
+
 void renderShape(struct Shape* shape);
 
 //Helper function to render the bounding box to the screen
 void
 renderAABB(struct AABB *aabb, vec4 color);
 
-void
-renderDrawInstances(GLuint texture,struct InstanceData* instances, size_t count);
-
-//
-void
-renderDrawShapesInstanced(struct Shape* shape, size_t count);
- 
 //render all bounding boxes using renderAABB()
 void
 drawAllAABB(void);
 
 void
 renderShutdown(void);
+
 #endif

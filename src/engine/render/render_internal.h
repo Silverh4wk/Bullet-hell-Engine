@@ -22,10 +22,11 @@ struct Batch {
 
 
 struct RenderStateInternal{
-    uint32 vao_quad; 
+    
     //sending data to the graphic cards can be relatively slow
     // so when possible, we send whatever we can at once and have the
     // vertex buffer objects (VBO) store it in the GPU memory
+    uint32 vao_quad;
     uint32 vbo_quad;
     uint32 ebo_quad;
     uint32 shader_default;
@@ -36,16 +37,29 @@ struct RenderStateInternal{
     GLuint instance_vbo;
     size_t instance_capacity;  //current size of gpu buffer
 
+    // Circle primitive 
+    uint32 vao_circle;
+    uint32 vbo_circle;
+    size_t circle_vertex_count;
+
     //batching
-    struct Batch batches[64];        // max 64 different textures per frame
+    struct Batch quad_batches[64];        // max 64 different textures per frame
     int batchCount;
+    struct Batch circle_batches[64]; 
+    int circle_batch_count;
+
+    //camera view
+    GLint view_uniform; 
 };
 
 SDL_Window *
 renderInitWindow(int width, int height);
 
 void
-renderInitQuad(struct RenderStateInternal *state,uint32 *vao, uint32 *vbo, uint32 *ebo);
+renderInitQuad(struct RenderStateInternal *state);
+
+void 
+renderInitCircle(struct RenderStateInternal* state);
 
 void
 renderInitColorTexture(uint32 *texture);

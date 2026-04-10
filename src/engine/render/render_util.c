@@ -1,7 +1,6 @@
 #include <glad/glad.h>
 #include <stdint.h>
 #include <stdio.h>
-
 #include "../../io/io.h"
 #include "render_internal.h"
 

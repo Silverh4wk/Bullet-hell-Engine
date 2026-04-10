@@ -9,9 +9,11 @@
 
 *** DONE Fix renderAABB to work without breaking batched state – draw after batching or as line
 
-*** TODO [#A] Add camera/view transform 
+*** DONE Add circle rendering
 
-*** TODO [#A] Add circle rendering (quad + fragment shader discard or triangle)
+*** DONE  Add camera/view transform
+
+*** TODO [#A] Add Background rendering for levels 
 
 *** TODO [#B] Add layer/Z‑ordering
 

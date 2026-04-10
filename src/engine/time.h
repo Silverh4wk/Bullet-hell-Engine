@@ -1,7 +1,6 @@
 #ifndef TIME_H
 #define TIME_H
-
-#include "../helpers.h"
+#include "../types.h"
 
 struct Time_State {
 

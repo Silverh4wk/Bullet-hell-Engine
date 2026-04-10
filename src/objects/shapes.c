@@ -49,6 +49,8 @@ shapeQuadCreate(vec2 pos, vec2 size , vec4* color, type t,bool t_physics)
     }
 
     struct Shape *quad = allocatePool(&shape_pool);
+    quad->type = SHAPE_QUAD;
+    quad->physics_enabled = t_physics;
     
     // Fill hitbox stuff
     // Add to the body list
@@ -64,6 +66,7 @@ shapeQuadCreate(vec2 pos, vec2 size , vec4* color, type t,bool t_physics)
     
     // Fill quad vars
     setQuad(quad, pos, size, color);
+    quad->data.quad.rotation_angle = 0.0f;
     
     if (!quad){
 	r.result = SHAPE_ERR_INTERNAL; 
@@ -110,6 +113,8 @@ shapeCircleCreate(vec2 pos, real32 radius, vec4* color, type t,bool t_physics)
     }
 
     struct Shape *circle = allocatePool(&shape_pool);
+    circle->type = SHAPE_CIRCLE;
+    circle->physics_enabled = t_physics;
     
     // Fill hitbox stuff
     // Add to the body list
@@ -126,6 +131,7 @@ shapeCircleCreate(vec2 pos, real32 radius, vec4* color, type t,bool t_physics)
     
     // Fill quad vars
     setCircle(circle,pos, radius, color);
+    circle->data.circle.origin = 0.0f;
     if (!circle){
 	r.result = SHAPE_ERR_INTERNAL; 
 	ERROR_RETURN(r, "Failed to create shape, SHAPE_ERROR: SHAPE_ERR_INTERNAL %d \n", r.result)}
@@ -145,16 +151,16 @@ void shapeMove(struct Shape* quad, real32 posx, real32 posy)
     
 }
 
-void QuadSetSize(struct Quad* quad, real32 width, real32 height)
+void QuadSetSize(struct Shape* quad, real32 width, real32 height)
 {
-    setVec2(&quad->size,width,height);    
+    setVec2(&quad->data.quad.size,width,height);    
 }
 
-void QuadSetColor(struct Quad *quad, real32 c1, real32 c2, real32 c3, real32 c4) {
+void QuadSetColor(struct Shape *quad, real32 c1, real32 c2, real32 c3, real32 c4) {
     setVec4(&quad->color,c1,c2,c3,c4);    
 }
 
-void QuadDelete(struct Quad* quad)
+void QuadDelete(struct Shape* quad)
 {
     
      if (!quad) {

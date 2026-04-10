@@ -10,6 +10,7 @@
 #include "keyboardTable.h"
 #include "engine/render.h"
 #include "engine/render/render_internal.h"
+#include "engine/camera.h"
 #include "objects/shapes.h"
 #include "engine/global.h"
 #include "engine/config.h"
@@ -19,7 +20,7 @@
 #include "engine/dataStructs.h" //temp name
 
 
-#define BODY_COUNT 10000
+#define BODY_COUNT 50000
 static struct Array_List* all_quads = NULL;
 
 //(TESTING)
@@ -42,10 +43,10 @@ void bullet_onCollision(struct Body* self, struct Body* other) {
 static void spawn_bouncy_balls(int count) {
     for (int i = 0; i < count; i++) {
         vec2 pos = { rand() % global.render.width, rand() % global.render.height };
-        vec2 size = { 8, 16 };
+        vec2 size = { 8, 4 };
         vec4 color = { (float)rand() / RAND_MAX, (float)rand() / RAND_MAX, (float)rand() / RAND_MAX, 1.0f };
 
-        struct ShapeUnion ball = shapeQuadCreate(pos, size, &color, BODY_BULLET, true);
+        struct ShapeUnion ball = shapeCircleCreate(pos, size[1], &color, BODY_BULLET, true);
         struct Shape* q = ball.shape;
         if (!q || !q->body) continue;
 
@@ -53,7 +54,6 @@ static void spawn_bouncy_balls(int count) {
         float speed = 50.0f + (float)(rand() % 200);
         q->body->velocity[0] = cosf(angle) * speed;
         q->body->velocity[1] = sinf(angle) * speed;
-        q->body->onCollision = NULL;
         q->body->active = true;
         arrayListAppend(all_quads, &q);
     }
@@ -131,7 +131,6 @@ static void input_handle(void) {
     }
     if (global.input.toggle == KEY_PRESSED)
     {
-	
 	toggleHitBoxVisual = !toggleHitBoxVisual;
     	printf("P \n");
     }
@@ -149,16 +148,6 @@ static void input_handle(void) {
     if (global.input.hplus == KEY_PRESSED || global.input.hplus == KEY_HELD)
     {
 	qsize[0] += 5;
-	printf("+ \n");
-    }
-     if (global.input.vminus == KEY_PRESSED || global.input.vminus == KEY_HELD)
-    {
-	qsize[1] -= 5;
-	printf("- \n");
-    }
-    if (global.input.vplus == KEY_PRESSED || global.input.vplus == KEY_HELD)
-    {
-	qsize[1] += 5;
 	printf("+ \n");
     }
      if (global.input.escape == KEY_PRESSED || global.input.escape == KEY_HELD)
@@ -192,7 +181,7 @@ int main(int argc, char *argv[])
     GlobalRunning = 1;
     
     SDL_Event event;
-
+    
     // (TODO) load_level(level name) 
 
     //reminder to untie the engine to the fps (is set to 60 for now)
@@ -202,6 +191,11 @@ int main(int argc, char *argv[])
     physicsInit();
     renderInit();
     InitEnginePools();
+    Camera main_camera;
+    camera_init(&main_camera);
+    camera_set_offset(&main_camera, 0.0f, 100.0f); 
+    camera_follow(&main_camera, pos, 5.0f);  
+
     all_quads = arrayListCreate(sizeof(struct Quad*), BODY_COUNT + 10);
     spawn_bouncy_balls(BODY_COUNT);
 // (TODO) Figure out what to do with this later
@@ -213,14 +207,6 @@ int main(int argc, char *argv[])
     player.shape->body->onCollision = player_onCollision;
     player.shape->body->active = true;
     ;
-    
-
-     // Create a bullet body moving toward player
-    struct ShapeUnion bullet = shapeQuadCreate((vec2){100,300}, (vec2){8,8}, &bulletColor,  BODY_PLAYER, true);
-    bullet.shape->body->velocity[0] = 200.0f; 
-    bullet.shape->body->velocity[1] = 0;
-    bullet.shape->body->onCollision = bullet_onCollision;
-    bullet.shape->body->active = true;
     
     //main game loop
     while (GlobalRunning) {
@@ -255,19 +241,29 @@ int main(int argc, char *argv[])
 	player.shape->data.quad.rotation_angle = angle;
 	inputUpdate();
 	input_handle();
+	//testing camera panning
+     if (global.input.vminus == KEY_PRESSED || global.input.vminus == KEY_HELD)
+    {
+        camera_set_offset(&main_camera, main_camera.offset[0], main_camera.offset[1] - 200.0f * global.time.delta);
+	printf("- \n");
+    }
+    if (global.input.vplus == KEY_PRESSED || global.input.vplus == KEY_HELD)
+    {
+	camera_set_offset(&main_camera, main_camera.offset[0], main_camera.offset[1] + 200.0f * global.time.delta);
+	printf("+ \n");
+    }
 	physicsUpdate();
-	broadPhaseResolve(); 
-	physicsRemoveInactiveBodies();
+	//broadPhaseResolve(); 
+	//physicsRemoveInactiveBodies();
 	shapeMove(player.shape, pos[0],pos[1] );
-	//rendering block begin
+	camera_update(&main_camera, global.time.delta);
+	camera_apply(&main_camera);
 	renderBegin();
 	for (size_t i = 0; i < all_quads->len; i++) {
 	    struct Shape** qptr = (struct Shape**) arrayListGet(all_quads, i);
 	    if (*qptr) renderSubmitShape(*qptr);
     
             }
-	renderSubmitShape(bullet.shape);
-
 	renderSubmitShape(player.shape);
 	
 	// for testing, probably should put it under a flag 

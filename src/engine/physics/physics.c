@@ -16,11 +16,10 @@ void physicsInit(void)
 // Update all bodies in the list physics properties
 // This to happen at the end of every frame
 
-void physicsUpdate(void)
-    {
-	struct Body *body ;
-	//for every body in the list of bodies, update its physics state and position
-	for(uint32 i =0 ;i< state.body_list->len;++i)
+static inline void updateBodiesPosition(void)
+{
+    struct Body *body ;
+    for(uint32 i =0 ;i< state.body_list->len;++i)
 	{
         body = (struct Body*) arrayListGet(state.body_list, i);
         body->velocity[0] += body->acceleration[0] * global.time.delta;
@@ -29,6 +28,11 @@ void physicsUpdate(void)
         body->sptr->pos[1] += body->velocity[1] * global.time.delta;
 
     }
+};
+void physicsUpdate(void)
+    {
+	//for every body in the list of bodies, update its physics state and position
+	updateBodiesPosition();
 }
 
 //init a body with physics properties

@@ -33,16 +33,6 @@ struct Shape {
     } data;
 };
 
-struct Quad {
-    vec2 pos;
-    vec2 size;
-    vec4 color;
-    real32 rotation_angle;
-    struct Body* body;
-    GLuint texture;
-    bool physics_enabled;
-};
-
 
 enum ShapeResults{
     SHAPE_OK,
@@ -63,8 +53,6 @@ initShapesPool(void);//initiate the object pool for quad objects
 
 //allocoate memorycreates the quad with the given param
 //position and size are needed but color can be NULL
-
-
 struct ShapeUnion
 shapeQuadCreate(vec2 pos, vec2 size , vec4* color, type t, bool t_physics);
 
@@ -77,7 +65,7 @@ shapeMove(struct Shape *shape, real32 posx, real32 posy);
 
 //set the size of the quad
 void
-quadSetSize(struct quad *q, real32 width, real32 height);
+quadSetSize(struct Shape *quad, real32 width, real32 height);
 
 //set the size of the quad
 void

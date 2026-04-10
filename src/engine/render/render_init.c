@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 #include <SDL3/SDL.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "../global.h"
 #include "../../helpers.h"
@@ -21,7 +22,7 @@ renderInitWindow(int width, int height) {
     SDL_Window * window = SDL_CreateWindow("BHE",
 					   global.render.width,
 					   global.render.height,
-					   SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN |SDL_WINDOW_INPUT_FOCUS |SDL_WINDOW_RESIZABLE);
+					   SDL_WINDOW_OPENGL  |SDL_WINDOW_INPUT_FOCUS|SDL_WINDOW_RESIZABLE);
 			   
     if (!window) {
         ERROR_EXIT("Failed to create a window: %s\n", SDL_GetError());
@@ -43,12 +44,69 @@ renderInitWindow(int width, int height) {
     return window;
 };
 
+void renderInitCircle(struct RenderStateInternal *state)
+{
+    const int segments = 32;
+    const int vert_count = segments + 2; // center + segments + repeat of first
+    state->circle_vertex_count = vert_count;
+
+    float *vertices = malloc(sizeof(float) * vert_count * 5);
+    if (!vertices) return;
+
+    // center
+    vertices[0] = 0.0f; vertices[1] = 0.0f; vertices[2] = 0.0f; vertices[3] = 0.0f; vertices[4] = 0.0f;
+
+    for (int i = 0; i <= segments; ++i) {
+        float theta = (float)i / (float)segments * 2.0f * Pi32;
+        float x = cosf(theta);
+        float y = sinf(theta);
+        int idx = (i + 1) * 5;
+        vertices[idx + 0] = x;
+        vertices[idx + 1] = y;
+        vertices[idx + 2] = 0.0f;
+        vertices[idx + 3] = 0.0f;
+        vertices[idx + 4] = 0.0f;
+    }
+
+    glGenVertexArrays(1, &state->vao_circle);
+    glGenBuffers(1, &state->vbo_circle);
+
+    glBindVertexArray(state->vao_circle);
+    glBindBuffer(GL_ARRAY_BUFFER, state->vbo_circle);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vert_count * 5, vertices, GL_STATIC_DRAW);
+
+    // position
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), NULL);
+    glEnableVertexAttribArray(0);
+    // uv 
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    // attach instance attributes (mat4 + color) using the shared instance VBO
+    glBindBuffer(GL_ARRAY_BUFFER, state->instance_vbo);
+    GLsizei stride = sizeof(struct InstanceData);
+    for (int i = 0; i < 4; ++i) {
+        GLuint loc = 2 + i;
+        glEnableVertexAttribArray(loc);
+        glVertexAttribPointer(loc, 4, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(float) * 4 * i));
+        glVertexAttribDivisor(loc, 1);
+    }
+    GLuint color_loc = 6;
+    glEnableVertexAttribArray(color_loc);
+    glVertexAttribPointer(color_loc, 4, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(float) * 16));
+    glVertexAttribDivisor(color_loc, 1);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    glBindVertexArray(0);
+
+    free(vertices);
+}
 
 
 // 1. bind Vertex Array Object
 // 2. copy our vertices array in a buffer for OpenGL to use
 // 3. then set our vertex attributes pointers
-void renderInitQuad(struct RenderStateInternal *state,uint32 *vao, uint32 *vbo, uint32 *ebo) {
+void renderInitQuad(struct RenderStateInternal *state) {
 
     real32 vertices[] =
 	{ 
@@ -72,16 +130,16 @@ void renderInitQuad(struct RenderStateInternal *state,uint32 *vao, uint32 *vbo, 
 	};
 
 
-    glGenVertexArrays(1, vao);
-    glGenBuffers(1, vbo);
-    glGenBuffers(1, ebo);
+    glGenVertexArrays(1,&state->vao_quad);
+    glGenBuffers(1, &state->vbo_quad);
+    glGenBuffers(1, &state->ebo_quad);
 
-    glBindVertexArray(*vao);
+    glBindVertexArray(state->vao_quad);
 
-    glBindBuffer(GL_ARRAY_BUFFER, *vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, state->vbo_quad);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, state->ebo_quad);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 
@@ -186,4 +244,6 @@ void renderInitShaders(struct RenderStateInternal *state){
 	GL_FALSE,
 	&state->projection[0][0]
 	);
+    //get the view uniform location
+      state->view_uniform = glGetUniformLocation(state->shader_default, "view");
 };

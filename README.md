@@ -19,10 +19,14 @@ A specialised bullet-hell game engine / toolkit that is optimized to handle larg
 - entty/object system
 - ..... to be added
 
-![](instanceRendering.mkv)
-![](circles.mkv)
-![](camera.mkv)
-![](input.mkv)
+### Some videos demonstrating some of what is done
+[![Engine Demo](./Videos/instanceRendering.gif)](https://mmuedumy-my.sharepoint.com/:v:/g/personal/hazim_elamin_mohamed_student_mmu_edu_my/IQD4CYTBtFXPQpdba3t6KV-VAWHYc5UXk83_Lcwsebn92rA?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&e=XWowpM)
+
+[![Circles Demo](./Videos/circles.gif)](https://mmuedumy-my.sharepoint.com/:v:/g/personal/hazim_elamin_mohamed_student_mmu_edu_my/IQBmEQDC1rqjQJI_zHbd59y5AbFffZkBLJP5huE0AZOHrrA?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&e=d1tHbE)
+
+[![camera panning Demo](./Videos/camera.gif)](https://mmuedumy-my.sharepoint.com/:v:/g/personal/hazim_elamin_mohamed_student_mmu_edu_my/IQBE9PT_dPjNTrMeyohV3S47AU3R9HrwipHucyY5ZWiFA_c?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&e=Hjsona)
+
+[![Input Demo](./Videos/input.gif)](https://mmuedumy-my.sharepoint.com/:v:/g/personal/hazim_elamin_mohamed_student_mmu_edu_my/IQD3zgq49mqgQbsLAdxukHQ6AUm2eo002EddPjfeu_tJung?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&e=cGXOEz)
 
 ## Build 
 - I use a batch file for building the project.

@@ -33,7 +33,8 @@ A specialised bullet-hell game engine / toolkit that is optimized to handle larg
 - navigate to the `Build` dir
 - execute the BHE.exe  
 
-## Project Structure (suggested)
+## Project Structure 
+```
 ├── engine/                 # Core engine systems
 │   ├── dataStructs/        # Custom data structures 
 │   ├── physics/            # Physics system 
@@ -65,7 +66,7 @@ A specialised bullet-hell game engine / toolkit that is optimized to handle larg
 ├── types.h                 # Shared type definitions
 │
 ├── todo.org                #  TODOs
-
+```
 
 ## License
 ---

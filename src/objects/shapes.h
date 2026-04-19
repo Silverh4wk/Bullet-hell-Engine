@@ -54,10 +54,10 @@ initShapesPool(void);//initiate the object pool for quad objects
 //allocoate memorycreates the quad with the given param
 //position and size are needed but color can be NULL
 struct ShapeUnion
-shapeQuadCreate(vec2 pos, vec2 size , vec4* color, type t, bool t_physics);
+shapeQuadCreate(vec2 pos, vec2 size , vec4* color, Type t, bool t_physics);
 
 struct ShapeUnion
-shapeCircleCreate(vec2 pos, real32 radius , vec4* color, type t, bool t_physics);
+shapeCircleCreate(vec2 pos, real32 radius , vec4* color, Type t, bool t_physics);
 
 //change the position of the quad  
 void

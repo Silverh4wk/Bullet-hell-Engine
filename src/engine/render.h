@@ -35,11 +35,17 @@ void
 renderSubmitShape(struct Shape *shape);
 //render a shape to the screen
 
-void renderShape(struct Shape* shape);
+void
+renderShape(struct Shape* shape);
 
 //Helper function to render the bounding box to the screen
 void
 renderAABB(struct AABB *aabb, vec4 color);
+
+
+// render the ecs
+void
+renderECS(void);
 
 //render all bounding boxes using renderAABB()
 void

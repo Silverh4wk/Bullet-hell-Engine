@@ -15,4 +15,7 @@ typedef float real32 ;
 typedef double real64 ;
 typedef uint32_t bool32;
 
+typedef uint32_t Entity;          // 0 means invalid
+typedef uint32_t ComponentType;   
+typedef uint32_t ComponentID;     // a handle to attached component 
 #endif

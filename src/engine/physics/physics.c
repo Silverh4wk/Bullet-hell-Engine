@@ -36,7 +36,7 @@ void physicsUpdate(void)
 }
 
 //init a body with physics properties
-size_t physicsBodyCreate(struct Shape* sptr,vec2 pos, vec2 size,type t) {    
+size_t physicsBodyCreate(struct Shape* sptr,vec2 pos, vec2 size,Type t) {    
     struct Body body = {
 	.aabb = {
 	    .coords = {pos[0],pos[1]},

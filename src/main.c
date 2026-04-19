@@ -17,10 +17,11 @@
 #include "engine/input.h"
 #include "engine/time.h"
 #include "engine/physics.h"
+#include "engine/entity.h"
 #include "engine/dataStructs.h" //temp name
 
 
-#define BODY_COUNT 50000
+#define BODY_COUNT 5000
 static struct Array_List* all_quads = NULL;
 
 //(TESTING)
@@ -195,7 +196,7 @@ int main(int argc, char *argv[])
     camera_init(&main_camera);
     camera_set_offset(&main_camera, 0.0f, 100.0f); 
     camera_follow(&main_camera, pos, 5.0f);  
-
+    vec2 size = {10,10};
     all_quads = arrayListCreate(sizeof(struct Quad*), BODY_COUNT + 10);
     spawn_bouncy_balls(BODY_COUNT);
 // (TODO) Figure out what to do with this later
@@ -203,11 +204,13 @@ int main(int argc, char *argv[])
 
     vec4 bulletColor = {1.0f, 0.0f, 1.0f, 1.0f}; 
     
-    struct ShapeUnion player = shapeQuadCreate((vec2){400,300}, (vec2){64,64}, NULL, BODY_PLAYER,true);
+    struct ShapeUnion player = shapeCircleCreate((vec2){720,720}, 64, NULL, BODY_PLAYER,true);
+    
     player.shape->body->onCollision = player_onCollision;
     player.shape->body->active = true;
-    ;
     
+    Entity e = EntityCreate(SHAPE_CIRCLE, &(vec2){100,100}, NULL, NULL, NULL,true,BODY_BULLET);
+
     //main game loop
     while (GlobalRunning) {
 	time_update();
@@ -259,16 +262,16 @@ int main(int argc, char *argv[])
 	camera_update(&main_camera, global.time.delta);
 	camera_apply(&main_camera);
 	renderBegin();
-	for (size_t i = 0; i < all_quads->len; i++) {
-	    struct Shape** qptr = (struct Shape**) arrayListGet(all_quads, i);
-	    if (*qptr) renderSubmitShape(*qptr);
+	/* for (size_t i = 0; i < all_quads->len; i++) { */
+	/*     struct Shape** qptr = (struct Shape**) arrayListGet(all_quads, i); */
+	/*     if (*qptr) renderSubmitShape(*qptr); */
     
-            }
+	//        }
 	renderSubmitShape(player.shape);
 	
 	// for testing, probably should put it under a flag 
-	
-        renderEnd();
+	renderECS();
+       renderEnd();
 	//rendering block end
 
         if(toggleHitBoxVisual)

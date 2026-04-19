@@ -14,7 +14,7 @@ initShapesPool(void)
     }
 
 struct ShapeUnion
-shapeQuadCreate(vec2 pos, vec2 size , vec4* color, type t,bool t_physics)
+shapeQuadCreate(vec2 pos, vec2 size , vec4* color, Type t,bool t_physics)
  {
      // if color is NULL
      vec4 c;
@@ -78,7 +78,7 @@ shapeQuadCreate(vec2 pos, vec2 size , vec4* color, type t,bool t_physics)
 
 
 struct ShapeUnion
-shapeCircleCreate(vec2 pos, real32 radius, vec4* color, type t,bool t_physics)
+shapeCircleCreate(vec2 pos, real32 radius, vec4* color, Type t,bool t_physics)
  {
      // if color is NULL
      vec4 c;
@@ -131,7 +131,6 @@ shapeCircleCreate(vec2 pos, real32 radius, vec4* color, type t,bool t_physics)
     
     // Fill quad vars
     setCircle(circle,pos, radius, color);
-    circle->data.circle.origin = 0.0f;
     if (!circle){
 	r.result = SHAPE_ERR_INTERNAL; 
 	ERROR_RETURN(r, "Failed to create shape, SHAPE_ERROR: SHAPE_ERR_INTERNAL %d \n", r.result)}

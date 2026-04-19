@@ -3,6 +3,7 @@
 #include "../global.h"
 #include "../render.h"
 #include "render_internal.h"
+#include "../ecs_internal.h"
 #include "../camera.h"
 #include "../global.h"
 
@@ -328,6 +329,28 @@ void renderShutdown(void) {
 
 }
 
+void
+renderECS(void) {
+    for (Entity e = 1; e < g_next_free; e++) {
+        // check 
+        uint32 required = (1 << COMPONENT_SHAPE) | (1 << COMPONENT_TRANSFORM);
+        if ((g_component_mask[e] & required) != required) continue;
+
+        struct ShapeComponent* sc = &g_shapes[e];
+        struct Transform* t = &g_transforms[e];
+        struct Shape* shape = sc->shape;
+        if (!shape) continue;
+
+        
+        shape->pos[0] = t->position[0];
+        shape->pos[1] = t->position[1];
+        if (shape->type == SHAPE_QUAD)
+            shape->data.quad.rotation_angle = t->rotation;
+
+        
+        renderSubmitShape(shape);
+    }
+}
 
 // camera = combining renderer projection and camera view 
 void camera_apply(const Camera* cam) {

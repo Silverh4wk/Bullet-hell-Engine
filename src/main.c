@@ -8,19 +8,7 @@
 #include <linmath.h>
 
 #include "keyboardTable.h"
-#include "engine/render.h"
-#include "engine/render/render_internal.h"
-#include "engine/camera.h"
-#include "objects/shapes.h"
-#include "engine/global.h"
-#include "engine/config.h"
-#include "engine/input.h"
-#include "engine/time.h"
-#include "engine/physics.h"
-#include "engine/entity.h"
-#include "engine/ecs_internal.h"
-#include "engine/dataStructs.h" //temp name
-
+#include "BHE/engineControls.h"
 
 #define BODY_COUNT 5000
 #define ENTITY_TEST_COUNT 1000
@@ -96,19 +84,13 @@ enum EngineState {
 //
 
 
-// ==== Global Variables ====
-//
 
-global_variable bool GlobalRunning = 0; // The state of the engine
-global_variable SDL_Color colors[64];
 
 //the init state
 global_variable enum EngineState currentState = STATE_MENU;
 
 global_variable SDL_Joystick * joystick = NULL;
 
-// for testing purposes
-global_variable int toggleHitBoxVisual = 0;
 
 global_variable vec2 pos;
 global_variable vec2 qsize;
@@ -170,8 +152,6 @@ void MenuScene(void);
 
 void JoystickScene(void);
 
-// kill everything
-void Terminate();
 
 // ===  Main Window call back ===
 //
@@ -180,27 +160,10 @@ void Terminate();
 //
 int main(int argc, char *argv[])
 {
-    
+    engineInit();
    
     
     // Set engine state to running at the beginning
-    GlobalRunning = 1;
-    
-    SDL_Event event;
-    
-    // (TODO) load_level(level name) 
-
-    //reminder to untie the engine to the fps (is set to 60 for now)
-    time_init(60);
-
-    config_init();
-    physicsInit();
-    renderInit();
-    InitEnginePools();
-    Camera main_camera;
-    camera_init(&main_camera);
-    camera_set_offset(&main_camera, 0.0f, 100.0f); 
-    camera_follow(&main_camera, pos, 5.0f);  
     for (int i = 0; i < ENTITY_TEST_COUNT; i++) {
         
         Entity e = entityCreate(i); 
@@ -291,23 +254,11 @@ int main(int argc, char *argv[])
         time_update_late();
     }
     
-    Terminate();
+    engineShutdown();
+
     return 0;
 }
 // (REMINDER) Set for catchup with frames here, never tie the engine speed to the game fps
-
-void Terminate() {
-    //release controllers (if any)
-    if (joystick) {
-        SDL_CloseJoystick(joystick);
-    }
-    
-    // Quit
-    renderShutdown();
-    SDL_DestroyWindow(global.render.window);
-
-    SDL_Quit();
-}
 
 
 //switch to other files maybe later

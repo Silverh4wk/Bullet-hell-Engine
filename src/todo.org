@@ -1,3 +1,13 @@
+* TODO API
+*** TODO [#A] Core Engine Control (partially)
+*** DONE [#A] Entity and Component Management
+*** TODO [#A] Bullet Pattern Authoring
+*** TODO [#C] Collision System
+*** TODO [#C] Rendering and Visuals
+*** TODO [#C] Input Handling
+*** TODO [#C] Audio Management
+
+
 * TODO Rendering system
 *** DONE Remove per‑frame malloc/realloc in batching 
 
@@ -15,17 +25,13 @@
 
 *** TODO [#A] Add Background rendering for levels 
 
-*** TODO [#B] Add layer/Z‑ordering
-
 *** TODO [#B] Implement persistent mapped buffer for high bullet counts 
 
 *** TODO [#C] Add simple text output (bitmap font via instanced quads) for debug
 
 *** TODO [#C] Add frustum culling to skip off‑screen
 
-
-
-
+*** TODO [#C] Add layer/Z‑ordering
 
 
 * TODO Window events

@@ -129,6 +129,17 @@ entitySetTransform(Entity entity, vec2* pos, real32* angle) {
 }
 
 void
+entitySetColor(Entity entity, vec4 color)
+{
+    if ( entity == 0 || entity >= MAX_ENTITIES ) return;
+    
+    g_shapes[entity].shape->color[0] = color[0];
+    g_shapes[entity].shape->color[1] = color[1];
+    g_shapes[entity].shape->color[2] = color[2];
+    g_shapes[entity].shape->color[3] = color[3];
+}
+
+void
 collisionSetHitboxBox( Entity entity, int width, int height ) {
     if ( entity == 0 || entity >= MAX_ENTITIES ) return;
     ensurePhysicsBody( entity );

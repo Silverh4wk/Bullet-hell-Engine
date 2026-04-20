@@ -5,7 +5,7 @@
 #include "config.h"
 #include "input.h"
 #include "time.h"
-
+#include "camera.h"
 //global structure that holds the global states of the engine
 struct Global {
     struct Render_State render;
@@ -13,7 +13,16 @@ struct Global {
     struct Input_State  input;
     struct Time_State   time;
 } ;
+// ==== Global Variables ====
+//
+
 extern struct Global global;
+extern SDL_Event event;
+extern Camera main_camera;
+extern bool GlobalRunning;
+extern SDL_Color colors[64];
+extern int toggleHitBoxVisual;
+
 
 
 #endif

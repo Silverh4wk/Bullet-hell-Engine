@@ -79,6 +79,18 @@ A specialised bullet-hell game engine / toolkit that is optimized to handle larg
 
 ## Current TODO
 ---
+# TODO API
+- [ ]  Core Engine Control (partially)
+- [x] Entity and Component Management
+- [ ] Bullet Pattern Authoring
+- [ ] Collision System
+- [ ] Rendering and Visuals
+- [ ] Input Handling
+- [ ] Audio Management
+
+
+
+
 # TODO Rendering system
 
 - [x] Remove per frame malloc/realloc in batching  

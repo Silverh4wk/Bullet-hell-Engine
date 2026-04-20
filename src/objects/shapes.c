@@ -134,7 +134,7 @@ shapeCircleCreate(vec2 pos, real32 radius, vec4* color, Type t,bool t_physics)
     if (!circle){
 	r.result = SHAPE_ERR_INTERNAL; 
 	ERROR_RETURN(r, "Failed to create shape, SHAPE_ERROR: SHAPE_ERR_INTERNAL %d \n", r.result)}
-
+    r.result = SHAPE_OK;
     r.shape = circle;
     return r;
  }

@@ -4,7 +4,7 @@
 #include "linmath.h"
 #include "array_list.h"
 #include "AABB.h"
-
+#include "../types.h"
 struct Body;
 
 // collision callback type
@@ -15,6 +15,7 @@ typedef enum {
   BODY_PLAYER,
   BODY_BULLET,
 } Type;
+
 
 // struct that hold the physical "body" or state of an object
 struct Body
@@ -27,6 +28,8 @@ struct Body
     int  active;
     Type type;
     struct Shape* sptr; //points back to the shape that its holdoing i guess (temp fix)
+    Entity entity;
+    char* group ;
 };
 
 void
@@ -54,7 +57,7 @@ void
 physicsToggleAllHitBoxes(void);
 
 void
-physicsBodyDestroyByIndex(size_t index);
+physicsBodyDestroy(size_t index);
 
 void
 physicsBodyDestroyByPtr(struct Body *body);
@@ -64,7 +67,6 @@ narrowPhaseResolve(struct Body *a, struct Array_List *candidates);
 
 void
 broadPhaseResolve(void);
-
 
 void
 physicsRemoveInactiveBodies(void);

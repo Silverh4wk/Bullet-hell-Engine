@@ -4,7 +4,7 @@
 #include "../pool_allocator.h"
 #include "physics_internal.h"
 #include "spatial_hashing.h"
-
+#include "../entity.h"
 
 static struct PhysicsStateInternal state;
 
@@ -20,15 +20,24 @@ static inline void updateBodiesPosition(void)
 {
     struct Body *body ;
     for(uint32 i =0 ;i< state.body_list->len;++i)
-	{
+    {
         body = (struct Body*) arrayListGet(state.body_list, i);
         body->velocity[0] += body->acceleration[0] * global.time.delta;
         body->velocity[1] += body->acceleration[1] * global.time.delta;
-        body->sptr->pos[0] += body->velocity[0] * global.time.delta;
-        body->sptr->pos[1] += body->velocity[1] * global.time.delta;
-
+        if (body->sptr) {
+            body->sptr->pos[0] = body->aabb.coords[0];
+            body->sptr->pos[1] = body->aabb.coords[1];
+        }
+	
+        if (body->entity != 0) {
+            struct Transform* t = entityGetTransform(body->entity);
+            if (t) {
+                t->position[0] = body->aabb.coords[0];
+                t->position[1] = body->aabb.coords[1];
+            }
+        }
     }
-};
+}
 void physicsUpdate(void)
     {
 	//for every body in the list of bodies, update its physics state and position
@@ -46,6 +55,7 @@ size_t physicsBodyCreate(struct Shape* sptr,vec2 pos, vec2 size,Type t) {
 	.onCollision = NULL,
 	.type = t,
 	.sptr = sptr,
+    .entity = 0,
 //if i ever think of adding gravity but who knows	
 //.gravity  = 9.80665f,
     };

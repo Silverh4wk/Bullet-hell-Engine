@@ -1,6 +1,7 @@
 #include "../entity.h"
 #include "../ecs_internal.h"
 #include "../component.h"
+#include "../physics.h"
 
 struct Transform      g_transforms[MAX_ENTITIES];
 struct Sprite         g_sprites[MAX_ENTITIES];
@@ -8,103 +9,159 @@ struct BulletSpawner  g_spawners[MAX_ENTITIES];
 uint32                g_component_mask[MAX_ENTITIES];
 Entity                g_next_free = 1;
 struct ShapeComponent g_shapes[MAX_ENTITIES];
+int32                 g_body_indices[MAX_ENTITIES];
 
 Entity
-EntityCreate(ShapeType shape,vec2* pos, vec2* size,vec4* color, real32* angle,bool32 p_enabled , Type t)
+entityCreate( Type t )
 {
-    if (g_next_free >= MAX_ENTITIES) {
+    if ( g_next_free >= MAX_ENTITIES ) {
         return 0; //log this laters
     }
     Entity entity = g_next_free++;
     g_component_mask[entity] = 0;
 
+    //assigning vals 
+    g_component_mask[entity] = 0;
+    g_body_indices[entity] = -1; // no body attached yet
+    g_transforms[entity].position[0] = 0.0f;
+    g_transforms[entity].position[1] = 0.0f;
+    g_transforms[entity].rotation = 0.0f;
     
-    if (pos != NULL) {
-        g_transforms[entity].position[0] = (*pos)[0];
-        g_transforms[entity].position[1] = (*pos)[1];
-    } else {
-        g_transforms[entity].position[0] = 0.0f;
-        g_transforms[entity].position[1] = 0.0f;
-    }
-    if (angle != NULL) {
-        g_transforms[entity].rotation = *angle;
-    } else {
-        g_transforms[entity].rotation = 0.0f;
-    }
-
     g_transforms[entity].scale[0] = 1.0f;
     g_transforms[entity].scale[1] = 1.0f;
 
-    g_component_mask[entity] |= (1 << COMPONENT_TRANSFORM);
-    
-    // create shape based on type, so quad or circle
-    vec4 defaultColor = {1,1,1,1};
-    vec4* col = color ? color : &defaultColor;
-    vec2 defaultPos = {0,0};
-    vec2* p = pos ? pos : &defaultPos;
+    g_component_mask[entity] |= ( 1 << COMPONENT_TRANSFORM );
 
-    struct Shape* sh = NULL;
-    struct ShapeUnion result;
-    
-    if (shape == SHAPE_QUAD) {
-        vec2 s = {32, 32};      // default size
-        if (size != NULL) {
-            result = shapeQuadCreate(*p, *size, col, t, p_enabled);
-        } else {
-            result = shapeQuadCreate(*p, s, col, t, p_enabled);
-        }
-        if (result.result != SHAPE_OK) return 0;
-        sh = result.shape;
-    } else if (shape == SHAPE_CIRCLE) {
-        real32 r = 16.0f;
-        if (size != NULL) {
-            /* use first component of provided size as radius */
-            result = shapeCircleCreate(*p, (*size)[0], col, t, p_enabled);
-        } else {
-            result = shapeCircleCreate(*p, r, col, t, p_enabled);
-        }
-        if (result.result != SHAPE_OK) return 0;
-        sh = result.shape;
-    }
-
-    if (!sh)
-	return 0;
-
-    struct ShapeComponent sc = { .shape = sh };
-    ComponentAttach(entity, COMPONENT_SHAPE, &sc);
-    
     return entity;
 }
 
-int EntityDestroy(Entity entity) {
+int entityDestroy( Entity entity ) {
     if (entity == 0 )
 	return 1;
     if( entity >= MAX_ENTITIES )
 	return -1;
+    if (g_body_indices[entity] != -1)
+    {
+	physicsBodyDestroy(g_body_indices[entity]);
+        g_body_indices[entity] = -1;
+    }
+
     g_component_mask[entity] = 0;
     return 0;
 }
 
 struct Transform*
-EntityGet(Entity entity) {
+entityGetTransform( Entity entity ) {
     if (entity == 0 || entity >= MAX_ENTITIES) return NULL;
     return &g_transforms[entity];
 }
 
-void
-EntitySetTransform(Entity entity, vec2* pos, real32* angle) {
-    // a temp pointer to get the entity data
-    struct Transform* transform = EntityGet(entity);
-    //override that data with 
-    if (transform) {
-	if(pos != NULL)
-	{
-	    transform->position[0] = (*pos)[0];
-	    transform->position[1] = (*pos)[1];
-	}
-	if (angle!= NULL)
-	    transform->rotation = *angle;
+
+static void
+ensurePhysicsBody( Entity entity ) {
+    if (g_body_indices[entity] != -1) return;  
+
+    struct Transform* transform = &g_transforms[entity];
+    vec2 pos = { transform->position[0], transform->position[1] };
+    vec2 size = { 32.0f, 32.0f };  // if no size was found
+
+    // if the entity has a ShapeComponent, use its dimensions.
+    if (g_component_mask[entity] & (1 << COMPONENT_SHAPE)) {
+        struct Shape* shape = g_shapes[entity].shape;
+        if (shape) {
+            if (shape->type == SHAPE_QUAD) {
+                size[0] = shape->data.quad.size[0];
+                size[1] = shape->data.quad.size[1];
+            } else if (shape->type == SHAPE_CIRCLE) {
+                float r = shape->data.circle.radius;
+                size[0] = size[1] = r * 2.0f;
+            }
+        }
     }
+
+    size_t bodyIdx = physicsBodyCreate(NULL, pos, size, 0);
+    g_body_indices[entity] = (int32)bodyIdx;
+
+    // Store a back-reference from the physics body to the entity
+    struct Body* body = physicsBodyGet(bodyIdx);
+    body->entity = entity;
+}
+
+void
+entitySetTransform(Entity entity, vec2* pos, real32* angle) {
+    // a temp pointer to get the entity data
+    struct Transform* transform = entityGetTransform(entity);
+    if (!transform) return;
+   //override that data with 
+    
+    if( pos != NULL )
+    {
+	transform->position[0] = ( *pos )[0];
+	transform->position[1] = ( *pos )[1];
+    }
+
+    if ( angle!= NULL )
+	transform->rotation = *angle;
+    
+    ensurePhysicsBody(entity);
+    
+    int32 bodyIdx = g_body_indices[entity];
+    struct Body* body = NULL;
+    if (bodyIdx != -1) {
+	body = physicsBodyGet(bodyIdx);
+        body->aabb.coords[0] = transform->position[0];
+        body->aabb.coords[1] = transform->position[1];
+    }
+
+    if (!(g_component_mask[entity] & (1 << COMPONENT_SHAPE))) {
+        vec4 white = {1,1,1,1};
+        struct ShapeUnion su = shapeQuadCreate(
+            (vec2){transform->position[0], transform->position[1]},
+            (vec2){32,32},
+            &white,
+            0,
+            false
+        );
+        su.shape->body = body;
+        struct ShapeComponent sc = { .shape = su.shape };
+        ComponentAttach(entity, COMPONENT_SHAPE, &sc);
+    }
+}
+
+void
+collisionSetHitboxBox( Entity entity, int width, int height ) {
+    if ( entity == 0 || entity >= MAX_ENTITIES ) return;
+    ensurePhysicsBody( entity );
+    int32 bodyIdx = g_body_indices[entity];
+    if ( bodyIdx == -1 ) return;
+    
+    struct Body* body = physicsBodyGet(bodyIdx);
+    body->aabb.dims[0] = width / 2.0f;
+    body->aabb.dims[1] = height / 2.0f;
+}
+
+//reminder to add a circle hitbox
+void
+collisionSetHitboxCircle( Entity entity, int radius ) {
+    if ( entity == 0 || entity >= MAX_ENTITIES ) return;
+    ensurePhysicsBody(entity);
+    int32 bodyIdx = g_body_indices[entity];
+    if ( bodyIdx == -1 ) return;
+
+    struct Body* body = physicsBodyGet(bodyIdx);
+    body->aabb.dims[0] = radius;
+    body->aabb.dims[1] = radius;
+}
+
+void
+collisionGroupAddToGrp( Entity entity, char *grp )
+{
+    if ( entity == 0 || entity >= MAX_ENTITIES ) return;
+    int32 bodyIdx = g_body_indices[entity];
+    if ( bodyIdx == -1 ) return;
+
+    struct Body * body = physicsGetBody( bodyIdx );
+    body->group = grp;
 }
 
 

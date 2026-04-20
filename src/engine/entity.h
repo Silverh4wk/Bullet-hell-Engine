@@ -8,22 +8,29 @@
 
 //creates a new game entity
 Entity
-EntityCreate(ShapeType shape,vec2* pos, vec2* size , vec4* color, real32* angle,bool32 p_enabled , Type t);
+entityCreate(Type t);
 
 
 // destroy a game entity,
 //1:  no entities to destroy
 //-1: entered ID is outside of MAX_ENTITES range 
 int
-EntityDestroy( Entity entity );
-
+entityDestroy( Entity entity );
 
 // return the entity transform data
 struct Transform*
-EntityGet( Entity entity );
+entityGetTransform( Entity entity );
 
 void
-EntitySetTransform( Entity entity, vec2* pos, real32* angle );
+entitySetTransform( Entity entity, vec2* pos, real32* angle );
 
+void
+collisionSetHitboxBox( Entity entity, int width, int height );
+
+void
+collisionSetHitboxCircle( Entity entity, int radius  );
+
+void
+collisionGroupAddToGrp( Entity entity,  char* grp );
 
 #endif

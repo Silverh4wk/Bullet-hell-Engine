@@ -336,18 +336,9 @@ renderECS(void) {
         uint32 required = (1 << COMPONENT_SHAPE) | (1 << COMPONENT_TRANSFORM);
         if ((g_component_mask[e] & required) != required) continue;
 
-        struct ShapeComponent* sc = &g_shapes[e];
-        struct Transform* t = &g_transforms[e];
-        struct Shape* shape = sc->shape;
+	struct Shape* shape = g_shapes[e].shape;
         if (!shape) continue;
-
-        
-        shape->pos[0] = t->position[0];
-        shape->pos[1] = t->position[1];
-        if (shape->type == SHAPE_QUAD)
-            shape->data.quad.rotation_angle = t->rotation;
-
-        
+  
         renderSubmitShape(shape);
     }
 }

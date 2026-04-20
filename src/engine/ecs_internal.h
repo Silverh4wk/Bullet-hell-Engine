@@ -14,5 +14,6 @@ extern struct BulletSpawner  g_spawners[MAX_ENTITIES];
 extern        uint32         g_component_mask[MAX_ENTITIES];
 extern        Entity         g_next_free;
 extern struct ShapeComponent g_shapes[MAX_ENTITIES];
+extern        int32          g_body_indices[MAX_ENTITIES]; // its so scuffed but to track what body belong to what
 
 #endif

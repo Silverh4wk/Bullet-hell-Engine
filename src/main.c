@@ -201,9 +201,9 @@ int main(int argc, char *argv[])
     camera_init(&main_camera);
     camera_set_offset(&main_camera, 0.0f, 100.0f); 
     camera_follow(&main_camera, pos, 5.0f);  
-    for (int i = 2; i < ENTITY_TEST_COUNT; i++) {
+    for (int i = 0; i < ENTITY_TEST_COUNT; i++) {
         
-        Entity e = entityCreate(i);  // Type can be 0 for testing
+        Entity e = entityCreate(i); 
         vec2 pos = {
             (float)(rand() % global.render.width),
             (float)(rand() % global.render.height)

@@ -7,7 +7,7 @@ struct Transform      g_transforms[MAX_ENTITIES];
 struct Sprite         g_sprites[MAX_ENTITIES];
 struct BulletSpawner  g_spawners[MAX_ENTITIES];
 uint32                g_component_mask[MAX_ENTITIES];
-Entity                g_next_free = 1;
+Entity                g_next_free = 0;
 struct ShapeComponent g_shapes[MAX_ENTITIES];
 int32                 g_body_indices[MAX_ENTITIES];
 
@@ -114,11 +114,11 @@ entitySetTransform(Entity entity, vec2* pos, real32* angle) {
     }
 
     if (!(g_component_mask[entity] & (1 << COMPONENT_SHAPE))) {
-        vec4 white = {1,1,1,1};
+        vec4 teal = {0,1,1,1};
         struct ShapeUnion su = shapeQuadCreate(
             (vec2){transform->position[0], transform->position[1]},
             (vec2){32,32},
-            &white,
+            &teal,
             0,
             false
         );

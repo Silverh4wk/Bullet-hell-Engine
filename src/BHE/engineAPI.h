@@ -14,7 +14,6 @@
 #include "../engine/ecs_internal.h"
 #include "../engine/dataStructs.h" //temp name
 
-
 SDL_Event event;              
 Camera main_camera;
 // update those voids to int for proper logging
@@ -54,8 +53,7 @@ void engineResume( void );
 void engineShutdown( void );
 int  engineGetState( void );
 void engineSetState( int state );
-void TimeInit( void );
-void getDeltaTime( void );
+
 
 
 

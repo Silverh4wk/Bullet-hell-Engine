@@ -16,7 +16,7 @@ engineInit(void)
 {
     current_state = STATE_INITIALIZING;
     //reminder to untie the engine to the fps (is set to 60 for now)
-    time_init(60);
+    timeInit(60);
     config_init();
     physicsInit();
     renderInit();
@@ -24,6 +24,11 @@ engineInit(void)
     camera_init(&main_camera);
     current_state = STATE_READY;
 };
+
+void engineLoadLevel( void );
+void engineRun( void ) { engineSetState( STATE_INITIALIZING ); }
+void enginePause( void ) { engineSetState( STATE_PAUSED ); }
+void engineResume( void ) { engineSetState( STATE_RUNNING ); }
 
 void engineShutdown() {
     //release controllers (if any)
@@ -35,15 +40,10 @@ void engineShutdown() {
     SDL_Quit();
 }
 
-void engineLoadLevel( void );
-void engineRun( void );
-void enginePause( void );
-void engineResume( void );
 
 //its a global variable but this function is still neat to have
 /////////////////////////////////////////////////////////////////
 void engineSetState( int state ) { current_state = state; };
 int engineGetState( void ) { return current_state; };
 /////////////////////////////////////////////////////////////////
-void TimeInit( void );
-void getDeltaTime( void );
+

@@ -11,7 +11,7 @@ struct Global {
     struct Render_State render;
     struct Config_State config;
     struct Input_State  input;
-    struct Time_State   time;
+    struct TimeState   time;
 } ;
 // ==== Global Variables ====
 //

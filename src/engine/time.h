@@ -2,7 +2,7 @@
 #define TIME_H
 #include "../types.h"
 
-struct Time_State {
+struct TimeState {
 
     real32 delta;// the time between frames
     real32 now; // the time of the current frame
@@ -18,18 +18,20 @@ struct Time_State {
 
 // Initiate the engine time with a target framrate
 void
-time_init(uint32 frame_rate);
+timeInit(uint32 frame_rate);
 
 // Computes at the beginning of each frame
 // Updates the timing info
 void
-time_update(void);
+timeUpdate(void);
 
 // play catch up
 // Called at the end of each frame
 // enforce frame rate cap
 void
-time_update_late(void);
+timeUpdateLate(void);
 
+
+real32 getDeltaTime( void );
 
 #endif

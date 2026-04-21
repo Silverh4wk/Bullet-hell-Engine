@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
     
     //main game loop
     while ( global_running ) {
-	time_update();
+	timeUpdate();
 	
 #ifdef DEBUG_MODE
 	fpsUpdate();
@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
 	   drawAllAABB();
 #endif
        
-       time_update_late();
+       timeUpdateLate();
     }
     
     engineShutdown();

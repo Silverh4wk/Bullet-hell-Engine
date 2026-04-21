@@ -17,20 +17,34 @@
 
 SDL_Event event;              
 Camera main_camera;
-
 // update those voids to int for proper logging
 
-typedef enum {
-  ENGINE_OK,
-} EngineCodes;
+
+enum EngineStates{
+    STATE_INITIALIZING,
+    STATE_READY,
+    STATE_RUNNING,
+    STATE_PAUSED,
+    STATE_OFF,
+};
 
 
+enum EngineCodes {
+    ENGINE_OK,
+};
 
-typedef enum {
-  ENGINE_RUNNING,
-  ENGINE_PAUSED,
-} EngineStates;
 
+enum EngineScene {
+    SCENE_MENU,
+    SCENE_JOYSTICK_TEST,
+    SCENE_SETTINGS,
+    SCENE_TERMINATE
+// any more states can go here, still not sure how to do the editor part so
+    // future me focus on that pls
+};
+
+
+extern enum EngineStates current_state;
 
 void engineInit(void);
 void engineLoadLevel( void );
@@ -38,7 +52,8 @@ void engineRun( void );
 void enginePause( void );
 void engineResume( void );
 void engineShutdown( void );
-void engineGetState( void );
+int  engineGetState( void );
+void engineSetState( int state );
 void TimeInit( void );
 void getDeltaTime( void );
 

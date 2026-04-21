@@ -24,6 +24,10 @@ static inline void updateBodiesPosition(void)
         body = (struct Body*) arrayListGet(state.body_list, i);
         body->velocity[0] += body->acceleration[0] * global.time.delta;
         body->velocity[1] += body->acceleration[1] * global.time.delta;
+
+	 body->aabb.coords[0] += body->velocity[0] * global.time.delta;
+	 body->aabb.coords[1] += body->velocity[1] * global.time.delta;
+	
         if (body->sptr) {
             body->sptr->pos[0] = body->aabb.coords[0];
             body->sptr->pos[1] = body->aabb.coords[1];

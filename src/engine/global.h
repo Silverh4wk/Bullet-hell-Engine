@@ -19,10 +19,13 @@ struct Global {
 extern struct Global global;
 extern SDL_Event event;
 extern Camera main_camera;
-extern bool GlobalRunning;
 extern SDL_Color colors[64];
 extern int toggleHitBoxVisual;
+extern bool global_running;
 
+extern float fps_timer ;
+extern int   fps_frames;
+extern float fps_value ;
 
 
 #endif

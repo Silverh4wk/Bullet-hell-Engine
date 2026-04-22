@@ -18,20 +18,20 @@ typedef enum {
 
 struct Transform {
     vec2 position;
+    vec2 size;
     real32 rotation;  // is in rads
-    vec2 scale;
 } ;
 
 struct Sprite {
-    uint32 texture_id;   
-    vec4 color;          
+    vec4 color;
     int layer;           // this can be optional for the draw order since we didnt enable the depth buffer
+    uint32 texture_id;   
 } ;
 
 struct BulletSpawner {
-    uint32 pattern_id;    
     real32 fire_Rate;      
     real32 cooldown;      
+    uint32 pattern_id;    
 } ;
 
 struct ShapeComponent {

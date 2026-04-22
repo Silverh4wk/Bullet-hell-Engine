@@ -8,8 +8,7 @@
 
 //creates a new game entity
 Entity
-entityCreate(Type t);
-
+entityInit(Type t);
 
 // destroy a game entity,
 //1:  no entities to destroy
@@ -17,12 +16,19 @@ entityCreate(Type t);
 int
 entityDestroy( Entity entity );
 
+
+void
+entityBuild(Entity entity, ShapeType shape_t);
+
 // return the entity transform data
 struct Transform*
 entityGetTransform( Entity entity );
 
 void
-entitySetTransform( Entity entity, vec2* pos, real32* angle );
+entitySetTransform( Entity entity, vec2* pos, vec2* size, real32* angle );
+
+void
+entityAddPhysics(Entity entity);
 
 void
 collisionSetHitboxBox( Entity entity, int width, int height );

@@ -191,7 +191,7 @@ renderSubmitShape(struct Shape* shape) {
 
     GLuint tex = shape->texture ? shape->texture : state.texture_color;
 
-    if (shape->type == SHAPE_CIRCLE) {
+    if (shape->shape_type == SHAPE_CIRCLE) {
         // find/create circle batch for this texture
         if (state.circle_batch_count >= MAX_BATCHES)
             ERROR_EXIT("Exceeded MAX_BATCHES for circles: %d... \n", MAX_BATCHES)
@@ -210,7 +210,7 @@ renderSubmitShape(struct Shape* shape) {
             new_batch->texture = tex;
             new_batch->count = 0;
         }
-
+	
         struct Batch* batch = &state.circle_batches[batchIdx];
         if (batch->count >= batch->capacity) {
             ERROR_EXIT("Circle batch is full, exceeded capacity: %d\n", MAX_INSTANCES_PER_BATCH);
@@ -331,11 +331,11 @@ void renderShutdown(void) {
 
 void
 renderECS(void) {
-    for (Entity e = 1; e < g_next_free; e++) {
-        // check 
-        uint32 required = (1 << COMPONENT_SHAPE) | (1 << COMPONENT_TRANSFORM);
+    for (Entity e = 1; e <= g_next_free+1; e++) {
+        // check for both shape and transform data
+        uint64 required = (1 << COMPONENT_SHAPE) | (1 << COMPONENT_TRANSFORM);
         if ((g_component_mask[e] & required) != required) continue;
-
+	
 	struct Shape* shape = g_shapes[e].shape;
         if (!shape) continue;
   

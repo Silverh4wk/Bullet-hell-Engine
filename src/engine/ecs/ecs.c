@@ -6,33 +6,64 @@
 struct Transform      g_transforms[MAX_ENTITIES];
 struct Sprite         g_sprites[MAX_ENTITIES];
 struct BulletSpawner  g_spawners[MAX_ENTITIES];
-uint32                g_component_mask[MAX_ENTITIES];
+uint64                g_component_mask[MAX_ENTITIES]; // bitmask to see the components an entity got 
 Entity                g_next_free = 0;
+int                   g_type[MAX_ENTITIES];
 struct ShapeComponent g_shapes[MAX_ENTITIES];
 int32                 g_body_indices[MAX_ENTITIES];
 
+
 Entity
-entityCreate( Type t )
+entityInit( Type t )
 {
     if ( g_next_free >= MAX_ENTITIES ) {
         return 0; //log this laters
     }
-    Entity entity = g_next_free++;
-    g_component_mask[entity] = 0;
-
-    //assigning vals 
-    g_component_mask[entity] = 0;
-    g_body_indices[entity] = -1; // no body attached yet
+    // add the entity to the array
+    Entity entity = ++g_next_free;
+    g_type[entity] = t;
+    //assigning vals to zeroes
+    g_component_mask[entity] = 0; //no components attached
+    g_body_indices[entity] = -1; // no body attached
+    
     g_transforms[entity].position[0] = 0.0f;
     g_transforms[entity].position[1] = 0.0f;
-    g_transforms[entity].rotation = 0.0f;
+    g_transforms[entity].rotation    = 0.0f;
+    g_transforms[entity].size[0]     = 0.0f; 
+    g_transforms[entity].size[1]     = 0.0f;
     
-    g_transforms[entity].scale[0] = 1.0f;
-    g_transforms[entity].scale[1] = 1.0f;
-
-    g_component_mask[entity] |= ( 1 << COMPONENT_TRANSFORM );
-
+    //bitwise OR assignment
+    //left shift by COMPONENT_TRANSFORM position
+    //turning the bit on
+    //just using this to track what components does the entity got attached
+    ADD_COMPONENT(entity, COMPONENT_TRANSFORM);    
     return entity;
+}
+
+void entityBuild( Entity entity, ShapeType shape_t )
+{
+    struct Transform* transform = entityGetTransform( entity );
+    if ( !transform ) return;
+    vec2 pos = { transform->position[0], transform->position[1] };
+    vec2 size = { transform->size[0], transform->size[1] };
+    
+    if ( !HAS_COMPONENT( entity, COMPONENT_SHAPE ) )
+    {
+        vec4 color = {0,1,1,1}; //default color
+
+        struct ShapeUnion shape_union = {0};
+	
+	if( shape_t == SHAPE_QUAD )
+	{
+	    shape_union = shapeQuadCreate(pos,size,&color,0,false); // physics remain off unless u decide to add a physical body
+	}
+	else if ( shape_t == SHAPE_CIRCLE )
+	{
+	    shape_union = shapeCircleCreate(pos,size[0],&color,0,false); // physics remain off unless u decide to add a physical body
+	}
+	struct ShapeComponent shape_component = { .shape = shape_union.shape };
+	ComponentAttach(entity, COMPONENT_SHAPE, &shape_component);
+    }    
 }
 
 int entityDestroy( Entity entity ) {
@@ -59,74 +90,73 @@ entityGetTransform( Entity entity ) {
 
 static void
 ensurePhysicsBody( Entity entity ) {
-    if (g_body_indices[entity] != -1) return;  
+    //a body is already attached
+    //skip this step
+    if (g_body_indices[entity] != -1) return;
+    //no shape, return
+   if ( ! HAS_COMPONENT( entity, COMPONENT_SHAPE ) ) return;
 
     struct Transform* transform = &g_transforms[entity];
     vec2 pos = { transform->position[0], transform->position[1] };
-    vec2 size = { 32.0f, 32.0f };  // if no size was found
-
-    // if the entity has a ShapeComponent, use its dimensions.
-    if (g_component_mask[entity] & (1 << COMPONENT_SHAPE)) {
-        struct Shape* shape = g_shapes[entity].shape;
-        if (shape) {
-            if (shape->type == SHAPE_QUAD) {
-                size[0] = shape->data.quad.size[0];
-                size[1] = shape->data.quad.size[1];
-            } else if (shape->type == SHAPE_CIRCLE) {
-                float r = shape->data.circle.radius;
-                size[0] = size[1] = r * 2.0f;
-            }
-        }
-    }
-
-    size_t bodyIdx = physicsBodyCreate(NULL, pos, size, 0);
+    vec2 size = { transform->size[0], transform->size[1] };  // if no size was found
+   
+    //create a physics body and store its index number
+    size_t bodyIdx = physicsBodyCreate(g_shapes[entity].shape, pos, size, 0);
     g_body_indices[entity] = (int32)bodyIdx;
-
-    // Store a back-reference from the physics body to the entity
+    
+    //store a back-reference from the physics body to the entity
+    //this one is funny cuz just like *shape, u can loop infinitely between members
     struct Body* body = physicsBodyGet(bodyIdx);
     body->entity = entity;
 }
 
 void
-entitySetTransform(Entity entity, vec2* pos, real32* angle) {
-    // a temp pointer to get the entity data
+entitySetTransform(Entity entity, vec2* pos, vec2* size,real32* angle) {
+    // a temp pointer to get the entity transform data
     struct Transform* transform = entityGetTransform(entity);
     if (!transform) return;
-   //override that data with 
-    
+
+    //override that data with 
     if( pos != NULL )
     {
 	transform->position[0] = ( *pos )[0];
 	transform->position[1] = ( *pos )[1];
     }
 
+     if( size != NULL )
+    {
+	transform->size[0] = ( *size )[0];
+	transform->size[1] = ( *size )[1];
+    }
+     
     if ( angle!= NULL )
 	transform->rotation = *angle;
-    
-    ensurePhysicsBody(entity);
-    
-    int32 bodyIdx = g_body_indices[entity];
-    struct Body* body = NULL;
-    if (bodyIdx != -1) {
-	body = physicsBodyGet(bodyIdx);
-        body->aabb.coords[0] = transform->position[0];
-        body->aabb.coords[1] = transform->position[1];
-    }
-
-    if (!(g_component_mask[entity] & (1 << COMPONENT_SHAPE))) {
-        vec4 teal = {0,1,1,1};
-        struct ShapeUnion su = shapeQuadCreate(
-            (vec2){transform->position[0], transform->position[1]},
-            (vec2){32,32},
-            &teal,
-            0,
-            false
-        );
-        su.shape->body = body;
-        struct ShapeComponent sc = { .shape = su.shape };
-        ComponentAttach(entity, COMPONENT_SHAPE, &sc);
-    }
 }
+
+void
+entityAddPhysics( Entity entity )
+{
+    // a temp pointer to get the entity transform data
+    struct Transform* transform = entityGetTransform( entity );
+    if ( !transform ) return;
+    
+    //make sure it got a physical body attached to it
+    ensurePhysicsBody( entity );
+
+    int32 bodyIdx = g_body_indices[ entity ];
+    struct Body* body = NULL;
+    //get the body then copy the transform attribs
+    if ( bodyIdx != -1 )
+    {
+	body = physicsBodyGet( bodyIdx );
+	body->aabb.coords[ 0 ] = transform->position[ 0 ];
+	body->aabb.coords[ 1 ] = transform->position[ 1 ];
+	body->aabb.dims  [ 0 ] = transform->size    [ 0 ];
+	body->aabb.dims  [ 1 ] = transform->size    [ 1 ];
+	body->active = true; //enable physics by default
+    }
+    
+};
 
 void
 entitySetColor(Entity entity, vec4 color)
@@ -182,10 +212,10 @@ ComponentAttach(Entity entity, ComponentType type, void* data) {
     if ( entity == 0 )            return 1;
     if ( type >= COMPONENT_COUNT )  return 2;
 
-    // check if component is already already attached, except for spawner  
+    // check if component is already  attached, except for spawner (TODO)  
     // shift the number 1 by the type position,
     // then AND to check that type of component is attached or not
-    if (g_component_mask[entity] & (1 << type)) return -2;
+    if (HAS_COMPONENT( entity, type ) ) return -2;
 
     switch (type) {
         case COMPONENT_SPRITE:
@@ -200,9 +230,8 @@ ComponentAttach(Entity entity, ComponentType type, void* data) {
         default:
             return -3;
     }
-    //a quicker way to answer questions later
-    // each bit represent a component type
-    g_component_mask[entity] |= (1 << type);
+    //turn bit for that component on
+    ADD_COMPONENT( entity, type );
     return 0;
 }
 
@@ -212,18 +241,18 @@ ComponentDetach( Entity entity, ComponentType type ) {
     if ( entity == 0 ) return 1;
     uint32_t flag = (1 << type);
     //AND to see if the component is attached or not
-    if (!(g_component_mask[entity] & flag)) {
+   if ( !HAS_COMPONENT( entity, type ) ) {
         return -2; 
     }
     
-    g_component_mask[entity] &= ~(1 << type); // remove the component thats attached 
+    REMOVE_COMPONENT(entity, type); // remove the component thats attached 
     return 0;
 }
 
 void*
 ComponentGetData(Entity entity, ComponentType type) {
     if ( entity == 0 || entity >= MAX_ENTITIES ) return NULL;
-    if ( ! ( g_component_mask[entity] & ( 1 << type ) ) ) return NULL;
+    if ( ! ( HAS_COMPONENT( entity, type ) ) ) return NULL;
     
     switch (type) {
     case COMPONENT_TRANSFORM: return &g_transforms[entity];

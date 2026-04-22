@@ -49,9 +49,9 @@ shapeQuadCreate(vec2 pos, vec2 size , vec4* color, Type t,bool t_physics)
     }
 
     struct Shape *quad = allocatePool(&shape_pool);
-    quad->type = SHAPE_QUAD;
+    quad->shape_type = SHAPE_QUAD;
     quad->physics_enabled = t_physics;
-    
+    quad->type = t;
     // Fill hitbox stuff
     // Add to the body list
     // Return its index
@@ -60,8 +60,7 @@ shapeQuadCreate(vec2 pos, vec2 size , vec4* color, Type t,bool t_physics)
     //create physics body and attach it to the quad
     if(t_physics == true)
     {
-	size_t idx = physicsBodyCreate(quad,pos, size,t);
-	quad->body = physicsBodyGet(idx);
+	shapeAddPhysics(quad);
     }
     
     // Fill quad vars
@@ -72,6 +71,7 @@ shapeQuadCreate(vec2 pos, vec2 size , vec4* color, Type t,bool t_physics)
 	r.result = SHAPE_ERR_INTERNAL; 
 	ERROR_RETURN(r, "Failed to create shape, SHAPE_ERROR: SHAPE_ERR_INTERNAL %d \n", r.result)}
 
+    r.result = SHAPE_OK;
     r.shape = quad;
     return r;
  }
@@ -113,8 +113,9 @@ shapeCircleCreate(vec2 pos, real32 radius, vec4* color, Type t,bool t_physics)
     }
 
     struct Shape *circle = allocatePool(&shape_pool);
-    circle->type = SHAPE_CIRCLE;
+    circle->shape_type = SHAPE_CIRCLE;
     circle->physics_enabled = t_physics;
+    circle->type = t;
     
     // Fill hitbox stuff
     // Add to the body list
@@ -124,9 +125,7 @@ shapeCircleCreate(vec2 pos, real32 radius, vec4* color, Type t,bool t_physics)
     //create physics body and attach it to the quad
     if(t_physics == true)
     {
-	vec2 size = {radius, radius};
-	size_t idx = physicsBodyCreate(circle,pos, size,t);
-	circle->body = physicsBodyGet(idx);
+	shapeAddPhysics(circle);
     }
     
     // Fill quad vars
@@ -134,11 +133,30 @@ shapeCircleCreate(vec2 pos, real32 radius, vec4* color, Type t,bool t_physics)
     if (!circle){
 	r.result = SHAPE_ERR_INTERNAL; 
 	ERROR_RETURN(r, "Failed to create shape, SHAPE_ERROR: SHAPE_ERR_INTERNAL %d \n", r.result)}
+
     r.result = SHAPE_OK;
     r.shape = circle;
     return r;
  }
 
+void
+shapeAddPhysics(struct Shape *shape)
+{
+    if(!shape)
+	ERROR_RETURN(,"Failed to enable physics, shape returned NULL\n SHAPE_ERROR:SHAPE_ERR_INTERNAL\n");
+
+    if(shape->shape_type == SHAPE_QUAD)
+    {
+	size_t idx = physicsBodyCreate(shape,shape->pos,shape->data.quad.size,shape->type);
+	shape->body = physicsBodyGet(idx);
+    }
+    else if (shape->shape_type == SHAPE_CIRCLE)
+    {
+	vec2 radius = {shape->data.circle.radius,shape->data.circle.radius};
+	size_t idx = physicsBodyCreate(shape,shape->pos,radius,shape->type);
+	shape->body = physicsBodyGet(idx);
+    }
+}
 
 
 void shapeMove(struct Shape* quad, real32 posx, real32 posy)

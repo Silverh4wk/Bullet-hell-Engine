@@ -70,6 +70,15 @@ int main(int argc, char *argv[])
 {
     engineInit();
     
+    //initiate an entity
+    //Build the entity
+    //set its data
+
+//testing
+    Entity entity = entityInit(BODY_PLAYER);
+    entitySetTransform(entity, &(vec2){(real32)global.render.width/2,(real32)global.render.height/2},&(vec2){100,100} ,&(real32){1});
+    entityBuild(entity,SHAPE_QUAD);
+    entityAddPhysics(  entity );
     
     //main game loop
     while ( global_running ) {
@@ -98,13 +107,14 @@ int main(int argc, char *argv[])
 	    physicsUpdate();
 	    //broadPhaseResolve(); 
 	    //physicsRemoveInactiveBodies();
+	    shapeMove(g_shapes[entity].shape,pos[0],pos[1]);
 	}
 	
 	camera_update( &main_camera, global.time.delta );
 	camera_apply( &main_camera );
 	renderBegin();//rendering block begin
-     	renderECS();
-       renderEnd();  //rendering block end
+	renderECS();
+	renderEnd();  //rendering block end
 
 #ifdef DEBUG_MODE
        if( toggleHitBoxVisual )

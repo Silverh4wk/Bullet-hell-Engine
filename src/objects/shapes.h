@@ -16,7 +16,8 @@ typedef enum {
     
 struct Shape {
     struct Body* body;
-    ShapeType type;
+    ShapeType shape_type;
+    Type type;
     vec2 pos;
     vec4 color;          
     GLuint texture;
@@ -58,6 +59,10 @@ shapeQuadCreate(vec2 pos, vec2 size , vec4* color, Type t, bool t_physics);
 
 struct ShapeUnion
 shapeCircleCreate(vec2 pos, real32 radius , vec4* color, Type t, bool t_physics);
+
+
+void
+shapeAddPhysics(struct Shape *shape);
 
 //change the position of the quad  
 void

@@ -1,6 +1,6 @@
 * TODO API
-*** TODO [#A] Core Engine Control (partially)
-*** DONE [#A] Entity and Component Management
+*** DONE Core Engine Control 
+*** DONE Entity and Component Management
 *** TODO [#A] Bullet Pattern Authoring
 *** TODO [#C] Collision System
 *** TODO [#C] Rendering and Visuals
@@ -23,7 +23,9 @@
 
 *** DONE  Add camera/view transform
 
-*** TODO [#A] Add Background rendering for levels 
+*** DONE Add Background rendering for levels 
+
+*** DONE Add layer/Z‑ordering
 
 *** TODO [#B] Implement persistent mapped buffer for high bullet counts 
 
@@ -31,12 +33,9 @@
 
 *** TODO [#C] Add frustum culling to skip off‑screen
 
-*** TODO [#C] Add layer/Z‑ordering
-
-
 * TODO Window events
 
-** TODO Handle Resize
+** DONE Handle Resize
 
 ** TODO [#A] fix the hitbox rendering issues
 

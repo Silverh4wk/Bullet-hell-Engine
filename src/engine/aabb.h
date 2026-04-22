@@ -5,10 +5,10 @@
 
 /** \brief axis-aligned bounding box
 
-	Simple struct of four floats, divided into two vectors.
-
-	coordinates (coords) - The center point of the bounding box
-	dims (dimensions) - The half-width and half-height of the box
+    Simple struct of four floats, divided into two vectors.
+    
+    coordinates (coords) - The center point of the bounding box
+    dims (dimensions) - The half-width and half-height of the box
 */
 typedef struct AABB
 {

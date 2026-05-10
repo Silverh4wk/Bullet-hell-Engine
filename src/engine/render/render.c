@@ -55,7 +55,7 @@ renderInitBatches(int max_batches, int instances_per_batch) {
 static void
 renderDrawQuadInstances(GLuint texture,struct InstanceData* instances, size_t count) {
     if (count == 0) return;
-
+ 
     // make sure the GPU buffer is large enough
     if (count > state.instance_capacity) {
         size_t newcap = state.instance_capacity;
@@ -70,11 +70,15 @@ renderDrawQuadInstances(GLuint texture,struct InstanceData* instances, size_t co
     glBindBuffer(GL_ARRAY_BUFFER, state.instance_vbo);
     glBufferSubData(GL_ARRAY_BUFFER, 0, count * sizeof(struct InstanceData), instances);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-
+    
     // drawing
     glUseProgram(state.shader_default);
+    GLint useTexture = (texture == state.texture_color) ? 0 : 1;
+    glUniform1i(glGetUniformLocation(state.shader_default, "useTexture"),useTexture);
+
     glBindVertexArray(state.vao_quad);
     glBindTexture(GL_TEXTURE_2D, texture);
+    glUniform1i(glGetUniformLocation(state.shader_default, "texture_ID"), 0);
     glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, (GLsizei)count);
     glBindVertexArray(0);
 }
@@ -83,7 +87,7 @@ renderDrawQuadInstances(GLuint texture,struct InstanceData* instances, size_t co
 static void
 renderDrawCircleInstances(GLuint texture, struct InstanceData* instances, size_t count) {
     if (count == 0) return;
-
+    
     if (count > state.instance_capacity) {
         size_t newcap = state.instance_capacity;
         while (newcap < count) newcap *= 2;
@@ -98,8 +102,11 @@ renderDrawCircleInstances(GLuint texture, struct InstanceData* instances, size_t
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     glUseProgram(state.shader_default);
+    GLint useTexture = (texture == state.texture_color) ? 0 : 1;
+    glUniform1i(glGetUniformLocation(state.shader_default, "useTexture"),useTexture);
     glBindVertexArray(state.vao_circle);
     glBindTexture(GL_TEXTURE_2D, texture);
+    glUniform1i(glGetUniformLocation(state.shader_default, "texture_ID"), 0);
     glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, (GLsizei)state.circle_vertex_count, (GLsizei)count);
     glBindVertexArray(0);
 }
@@ -331,7 +338,7 @@ void renderShutdown(void) {
 
 void
 renderECS(void) {
-    for (Entity e = 1; e <= g_next_free+1; e++) {
+	for (Entity e = 1; e <= g_next_free; e++) {
         // check for both shape and transform data
         uint64 required = (1 << COMPONENT_SHAPE) | (1 << COMPONENT_TRANSFORM);
         if ((g_component_mask[e] & required) != required) continue;

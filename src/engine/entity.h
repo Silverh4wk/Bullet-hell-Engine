@@ -28,6 +28,12 @@ void
 entitySetTransform( Entity entity, vec2* pos, vec2* size, real32* angle );
 
 void
+entitySetColor( Entity entity, vec4 color);
+
+void
+entitySetTexture( Entity entity, GLuint texture);
+
+void
 entityAddPhysics(Entity entity);
 
 void

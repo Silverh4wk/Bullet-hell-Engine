@@ -66,7 +66,7 @@ shapeQuadCreate(vec2 pos, vec2 size , vec4* color, Type t,bool t_physics)
     // Fill quad vars
     setQuad(quad, pos, size, color);
     quad->data.quad.rotation_angle = 0.0f;
-    
+    quad->texture = 0;
     if (!quad){
 	r.result = SHAPE_ERR_INTERNAL; 
 	ERROR_RETURN(r, "Failed to create shape, SHAPE_ERROR: SHAPE_ERR_INTERNAL %d \n", r.result)}
@@ -116,7 +116,7 @@ shapeCircleCreate(vec2 pos, real32 radius, vec4* color, Type t,bool t_physics)
     circle->shape_type = SHAPE_CIRCLE;
     circle->physics_enabled = t_physics;
     circle->type = t;
-    
+    circle->texture = 0;
     // Fill hitbox stuff
     // Add to the body list
     // Return its index
@@ -148,13 +148,13 @@ shapeAddPhysics(struct Shape *shape)
     if(shape->shape_type == SHAPE_QUAD)
     {
 	size_t idx = physicsBodyCreate(shape,shape->pos,shape->data.quad.size,shape->type);
-	shape->body = physicsBodyGet(idx);
+	shape->body = physicsGetBody(idx);
     }
     else if (shape->shape_type == SHAPE_CIRCLE)
     {
 	vec2 radius = {shape->data.circle.radius,shape->data.circle.radius};
 	size_t idx = physicsBodyCreate(shape,shape->pos,radius,shape->type);
-	shape->body = physicsBodyGet(idx);
+	shape->body = physicsGetBody(idx);
     }
 }
 

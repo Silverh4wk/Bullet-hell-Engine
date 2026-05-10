@@ -2,6 +2,7 @@
 #define RENDER_INTERNAL_H
 
 #include <SDL3/SDL.h>
+
 #include "../../types.h"
 #include <Glad/glad.h>
 #include <linmath.h>
@@ -69,5 +70,9 @@ renderInitShaders(struct RenderStateInternal *state);
 
 uint32
 renderShaderCreate(const char *path_vert, const char *path_frag);
+
+
+uint32
+renderLoadTexture(const char *path) ;
 
 #endif

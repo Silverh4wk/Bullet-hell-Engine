@@ -13,9 +13,13 @@ void physicsInit(void)
     state.body_list = arrayListCreate(sizeof(struct Body), 0);
 }
 
-// Update all bodies in the list physics properties
-// This to happen at the end of every frame
+// funny physics system:
+// Two separate (bodies) --- the physical body and the rendered body
+// the physics body handle all the physical aspects, like moving collision etc
+// the rendered body is just the visual represenation of what happens to that body
 
+
+// grab all bodies in the game from the global body list and update them accordingly
 static inline void updateBodiesPosition(void)
 {
     struct Body *body ;
@@ -27,7 +31,7 @@ static inline void updateBodiesPosition(void)
 
 	 body->aabb.coords[0] += body->velocity[0] * global.time.delta;
 	 body->aabb.coords[1] += body->velocity[1] * global.time.delta;
-	
+	 //update the visual shape pos accordingly
         if (body->sptr) {
             body->sptr->pos[0] = body->aabb.coords[0];
             body->sptr->pos[1] = body->aabb.coords[1];
@@ -42,11 +46,13 @@ static inline void updateBodiesPosition(void)
         }
     }
 }
+
+// should handle all the physics update functions
+// currently only got the position function
 void physicsUpdate(void)
     {
-	//for every body in the list of bodies, update its physics state and position
 	updateBodiesPosition();
-}
+    }
 
 //init a body with physics properties
 size_t physicsBodyCreate(struct Shape* sptr,vec2 pos, vec2 size,Type t) {    
@@ -60,65 +66,45 @@ size_t physicsBodyCreate(struct Shape* sptr,vec2 pos, vec2 size,Type t) {
 	.type = t,
 	.sptr = sptr,
     .entity = 0,
-//if i ever think of adding gravity but who knows	
+// if i ever think of adding gravity but who knows (this thought was stupid of me, im a changed man now)	
 //.gravity  = 9.80665f,
     };
-
-    //attempt to append the newly created body to the list of bodies
-    //else exit
+    
+    // attempt to append the newly created body to the global list of bodies to store its reference
+    // else exit
     if(arrayListAppend(state.body_list,&body) == (size_t)-1)
 	ERROR_EXIT("Could not append body to list of bodies\n")
     return state.body_list->len -1;	    
 };
 
 
-// grab a body from the list 
-struct Body *physicsBodyGet(size_t index)
-{
-    return (struct Body*) arrayListGet(state.body_list,index);
-}
-
-int testAABBAABB(AABB* a, AABB* b){
-    
-// Exit with no intersection if separated along an axis
-    if( abs((int)a->coords[0] - (int)b->coords[0]) > (a->dims[0] + b->dims[0])) return 0;
-    if( abs((int)a->coords[1] - (int)b->coords[1]) > (a->dims[1] + b->dims[1])) return 0;
-    // Overlapping on all axes means AABBs are intersecting
-// basically if 1, they overlapping aka colliding
-return 1;
-}
-
+// get the total count of physical bodies created
 size_t physicsGetBodyCount(void) { return state.body_list->len; }
+
+// get a body from the global list via its index
 struct Body* physicsGetBody(size_t i) { return (struct Body*) arrayListGet(state.body_list, i); }
 
-
-void physicsToggleAllHitBoxes(void)
-{
-    for (size_t i = 0; i < state.body_list->len; i++)
-    {
-	struct Body* body = (struct Body*)arrayListGet(state.body_list, i);
-	body->aabb.toggle = (body->aabb.toggle == 0) ? 1 : 0;
-    }
-}
 
 void physicsBodyDestroy(size_t index)
 {
     if (!state.body_list) return;
-    if (index >= state.body_list->len) return;
 
+    // check if within range
+    if (index >= state.body_list->len) return;
+    // then destroy it
     arrayListRemove(state.body_list, index);
 }
 
 
-
-
+// does what it says
+// if you need to remove that specific body
 void physicsBodyDestroyByPtr(struct Body* body)
 {
     if (!state.body_list || !body) return;
 
     for (size_t i = 0; i < state.body_list->len; ++i)
     {
-        struct Body* b = (struct Body*)arrayListGet(state.body_list, i);
+        struct Body* b = physicsGetBody(i);
 
         if (b == body)
         {
@@ -128,6 +114,20 @@ void physicsBodyDestroyByPtr(struct Body* body)
     }
 }
 
+void physicsToggleAllHitBoxes(void)
+{
+    for (size_t i = 0; i < state.body_list->len; i++)
+    {
+	struct Body* body = physicsGetBody(i);
+	// only in debug mode, toggle the aabb rendering flag to see the hitboxes
+	body->aabb.toggle = (body->aabb.toggle == 0) ? 1 : 0;
+    }
+}
+
+// when an body dies, and is no longer needed
+// gets called at the end of physics update 
+// they get removed from the game (note to self, i am not sure if i want this as
+// "dead" objects are meant to stay outside in case they need to get recalled)
 
 void physicsRemoveInactiveBodies(void) {
     for (size_t i = 0; i < state.body_list->len; ) {
@@ -136,20 +136,6 @@ void physicsRemoveInactiveBodies(void) {
             arrayListRemove(state.body_list, i); 
         } else {
             i++;
-        }
-    }
-}
-
-
-void narrowPhaseResolve(struct Body* a, struct Array_List* candidates) {
-    for (size_t j = 0; j < candidates->len; j++) {
-        struct Body* b = *(struct Body**)arrayListGet(candidates, j);
-        if (a == b) continue;
-        if (!b->active) continue;
-	
-        if (testAABBAABB(&a->aabb, &b->aabb)) {
-            if (a->onCollision) a->onCollision(a, b);
-            if (b->onCollision) b->onCollision(b, a);
         }
     }
 }
@@ -189,6 +175,16 @@ void broadPhaseResolve(void) {
     
     spatialHashDestroy(sh);
     arrayListDestroy(candidates);
+}
+
+
+
+void narrowPhaseResolve(struct Body* a, struct Array_List* candidates) {
+    for (size_t j = 0; j < candidates->len; j++) {
+        struct Body* b = *(struct Body**)arrayListGet(candidates, j);
+        if (a == b) continue;
+        if (!b->active) continue;
+    }
 }
 
 

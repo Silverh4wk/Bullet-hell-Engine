@@ -1,10 +1,12 @@
 #include "helpers.h"
+#include <SOIL/SOIL.h>
+#include<SDL3/SDL_log.h>
 #include "objects/shapes.h"
 
 
 
 // just  quick functions to set vec2/3/4 variables
-// not really necessary just something i did when i was bored and lazy
+// not really necessary just something i did when i was bored and lazy (apparently, i never thought of using memcpy)
 
 void
 setVec2(vec2 *a, real32 x, real32 y) {
@@ -47,4 +49,3 @@ setCircle(struct Shape *circle, vec2 pos, real32 radius, vec4 *color)
     circle->data.circle.radius = radius;
     circle->texture = 0;
     };
-    

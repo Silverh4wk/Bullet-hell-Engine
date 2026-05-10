@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "../../io/io.h"
+#include <SOIL/SOIL.h>
 #include "render_internal.h"
 
 
@@ -54,3 +55,15 @@ renderShaderCreate(const char *path_vert, const char *path_frag) {
     free(file_fragment.data);
     return shader;
 };
+
+uint32 renderLoadTexture(const char *path) {
+    GLuint tex = SOIL_load_OGL_texture(
+        path,
+        SOIL_LOAD_AUTO,
+        SOIL_CREATE_NEW_ID,
+        SOIL_FLAG_INVERT_Y
+    );
+    if (!tex)
+        SDL_Log("SOIL error: %s – %s", path, SOIL_last_result());
+    return tex;
+}

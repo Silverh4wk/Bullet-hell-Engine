@@ -11,17 +11,18 @@ set "times=%PROJECT_ROOT%\src\engine\time.c"
 set "physics=%PROJECT_ROOT%\src\engine\physics\physics.c %PROJECT_ROOT%\src\engine\physics\spatial_hashing.c"
 set "dataStructs=%PROJECT_ROOT%\src\engine\dataStructs\array_list.c %PROJECT_ROOT%\src\engine\dataStructs\hash_table.c %PROJECT_ROOT%\src\engine\dataStructs\pool_allocator.c %PROJECT_ROOT%\src\engine\dataStructs\linked_list.c %PROJECT_ROOT%\src\engine\dataStructs\Quad_trees.c %PROJECT_ROOT%/src/engine/dataStructs/dataStructs.c"
 set "debug=%PROJECT_ROOT%\src\engine\Profiling\FPS_counter.c"
+set "pattern=%PROJECT_ROOT%\src\BHE\pattern.c"
 set "files=%PROJECT_ROOT%\src\main.c %PROJECT_ROOT%\src\glad.c %PROJECT_ROOT%\src\helpers.c %PROJECT_ROOT%\src\engine\global.c"
 
 set "API=%PROJECT_ROOT%\src\BHE\engineAPI.c"
-set "libs=%PROJECT_ROOT%\lib\x64\SDL3.lib  %PROJECT_ROOT%\lib\x64\SDL2_mixer.lib"
+set "libs=%PROJECT_ROOT%\lib\x64\SDL3.lib  %PROJECT_ROOT%\lib\x64\SDL2_mixer.lib  %PROJECT_ROOT%\lib\x64\SOIL.lib  gdi32.lib glu32.lib opengl32.lib " 
 
 if not exist "%BUILD_DIR%" mkdir "%BUILD_DIR%"
 
 pushd "%BUILD_DIR%"
 
-cl  /Zi /I "%PROJECT_ROOT%\include" ^
-    %files% %render% %io% %config% %input% %dataStructs% %physics% %times% %objects% %ecs% %API% %debug% ^
+cl  /Zi /MD  /I  "%PROJECT_ROOT%\include" ^
+    %files% %render% %io% %config% %input% %dataStructs% %physics% %times% %objects% %ecs% %API% %debug% %pattern% ^
     /link %libs% /OUT:BHE.exe
 
 popd

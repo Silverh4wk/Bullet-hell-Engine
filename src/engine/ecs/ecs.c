@@ -3,19 +3,33 @@
 #include "../component.h"
 #include "../physics.h"
 
-struct Transform      g_transforms[MAX_ENTITIES];
-struct Sprite         g_sprites[MAX_ENTITIES];
-struct BulletSpawner  g_spawners[MAX_ENTITIES];
-uint64                g_component_mask[MAX_ENTITIES]; // bitmask to see the components an entity got 
-Entity                g_next_free = 0;
-int                   g_type[MAX_ENTITIES];
-struct ShapeComponent g_shapes[MAX_ENTITIES];
-int32                 g_body_indices[MAX_ENTITIES];
+struct Transform          g_transforms[MAX_ENTITIES];
+struct Sprite             g_sprites[MAX_ENTITIES];
+struct BulletSpawner      g_spawners[MAX_ENTITIES];
+struct ShapeComponent     g_shapes[MAX_ENTITIES];
+struct PatternEntityState g_pattern_states[MAX_ENTITIES] = {0};
+uint64                    g_component_mask[MAX_ENTITIES]; // bitmask to see the components an entity got 
+Entity                    g_next_free = 0;
+int                       g_type[MAX_ENTITIES];
+int32                     g_body_indices[MAX_ENTITIES] = {0};
 
+// Initialize g_body_indices to -1 (no body attached by default)
+static void ecsInitArrays(void) {
+    for (int i = 0; i < MAX_ENTITIES; i++) {
+        g_body_indices[i] = -1;
+    }
+}
 
 Entity
 entityInit( Type t )
 {
+    // Initialize on first call
+    static int initialized = 0;
+    if (!initialized) {
+        ecsInitArrays();
+        initialized = 1;
+    }
+
     if ( g_next_free >= MAX_ENTITIES ) {
         return 0; //log this laters
     }
@@ -31,6 +45,8 @@ entityInit( Type t )
     g_transforms[entity].rotation    = 0.0f;
     g_transforms[entity].size[0]     = 0.0f; 
     g_transforms[entity].size[1]     = 0.0f;
+    memset(&g_pattern_states[entity], 0, sizeof(struct PatternEntityState));
+    
     
     //bitwise OR assignment
     //left shift by COMPONENT_TRANSFORM position
@@ -106,7 +122,7 @@ ensurePhysicsBody( Entity entity ) {
     
     //store a back-reference from the physics body to the entity
     //this one is funny cuz just like *shape, u can loop infinitely between members
-    struct Body* body = physicsBodyGet(bodyIdx);
+    struct Body* body = physicsGetBody(bodyIdx);
     body->entity = entity;
 }
 
@@ -148,7 +164,7 @@ entityAddPhysics( Entity entity )
     //get the body then copy the transform attribs
     if ( bodyIdx != -1 )
     {
-	body = physicsBodyGet( bodyIdx );
+	body = physicsGetBody( bodyIdx );
 	body->aabb.coords[ 0 ] = transform->position[ 0 ];
 	body->aabb.coords[ 1 ] = transform->position[ 1 ];
 	body->aabb.dims  [ 0 ] = transform->size    [ 0 ];
@@ -170,13 +186,20 @@ entitySetColor(Entity entity, vec4 color)
 }
 
 void
+entitySetTexture(Entity entity, GLuint tex) {
+    if (entity == 0 || entity >= MAX_ENTITIES) return;
+    if (!HAS_COMPONENT(entity, COMPONENT_SHAPE)) return;
+    g_shapes[entity].shape->texture = tex;
+}
+
+void
 collisionSetHitboxBox( Entity entity, int width, int height ) {
     if ( entity == 0 || entity >= MAX_ENTITIES ) return;
     ensurePhysicsBody( entity );
     int32 bodyIdx = g_body_indices[entity];
     if ( bodyIdx == -1 ) return;
     
-    struct Body* body = physicsBodyGet(bodyIdx);
+    struct Body* body = physicsGetBody(bodyIdx);
     body->aabb.dims[0] = width / 2.0f;
     body->aabb.dims[1] = height / 2.0f;
 }
@@ -189,7 +212,7 @@ collisionSetHitboxCircle( Entity entity, int radius ) {
     int32 bodyIdx = g_body_indices[entity];
     if ( bodyIdx == -1 ) return;
 
-    struct Body* body = physicsBodyGet(bodyIdx);
+    struct Body* body = physicsGetBody(bodyIdx);
     body->aabb.dims[0] = radius;
     body->aabb.dims[1] = radius;
 }
@@ -223,8 +246,10 @@ ComponentAttach(Entity entity, ComponentType type, void* data) {
             break;
         case COMPONENT_BULLET_SPAWNER:
             g_spawners[entity] = *(struct BulletSpawner*)data;
-            break;
-        case COMPONENT_SHAPE:
+	    memset(&g_pattern_states[entity], 0, sizeof(struct PatternEntityState));
+	    g_pattern_states[entity].pattern_started = false;  
+	    break;
+    case COMPONENT_SHAPE:
 	    g_shapes[entity] = *(struct ShapeComponent*)data;
 	    break;
         default:

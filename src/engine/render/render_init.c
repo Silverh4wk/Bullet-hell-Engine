@@ -17,8 +17,7 @@ renderInitWindow(int width, int height) {
 
     int i ;
     float x, y;
-    
- 
+
     SDL_Window * window = SDL_CreateWindow("BHE",
 					   global.render.width,
 					   global.render.height,
@@ -54,7 +53,11 @@ void renderInitCircle(struct RenderStateInternal *state)
     if (!vertices) return;
 
     // center
-    vertices[0] = 0.0f; vertices[1] = 0.0f; vertices[2] = 0.0f; vertices[3] = 0.0f; vertices[4] = 0.0f;
+    vertices[0] = 0.0f;
+    vertices[1] = 0.0f;
+    vertices[2] = 0.0f;
+    vertices[3] = 0.0f;
+    vertices[4] = 0.0f;
 
     for (int i = 0; i <= segments; ++i) {
         float theta = (float)i / (float)segments * 2.0f * Pi32;
@@ -115,12 +118,12 @@ void renderInitQuad(struct RenderStateInternal *state) {
 	    // but here we trying to make it use the center of the screen
 	    // so each vertics is  gonna sit at 0.5
             //x     y   z  u  v
-	    0.5,  0.5, 0, 0, 0, 
-	    0.5, -0.5, 0, 0, 0, 
+	     0.5,  0.5, 0, 1.0,1.0, 
+	     0.5, -0.5, 0, 1.0, 0, 
 	    -0.5, -0.5, 0, 0, 0, 
-	    -0.5,  0.5, 0, 0, 0 
+	    -0.5,  0.5, 0, 0, 1.0 
 	};
-
+    
     // a quad is just two triangles
     // so we try to tell opengl the order of what makes up the triangle
     uint32 indices [] =

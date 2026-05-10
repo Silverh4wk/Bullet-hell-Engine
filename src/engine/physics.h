@@ -26,10 +26,12 @@ struct Body
     vec2 acceleration;
     CollisionCallback onCollision; // a function pointer
     int  active;
+    real32 lifetime;
     Type type;
     struct Shape* sptr; //points back to the shape that its holdoing i guess (temp fix)
     Entity entity;
     char* group ;
+    
 };
 
 void
@@ -41,17 +43,11 @@ physicsUpdate(void);
 size_t
 physicsBodyCreate(struct Shape* sptr,vec2 pos, vec2 size,Type t);
 
-struct Body *
-physicsBodyGet(size_t index);
-
 size_t
 physicsGetBodyCount(void);
 
 struct Body*
 physicsGetBody(size_t i);
-
-int
-testAABBAABB(AABB* a, AABB* b);
 
 void
 physicsToggleAllHitBoxes(void);

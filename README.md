@@ -20,6 +20,8 @@ A specialised bullet-hell game engine / toolkit that is optimized to handle larg
 - ..... to be added
 
 ### Some videos demonstrating some of what is done
+[![Pattern Authoring Demo](./Videos/spiral.gif)]
+
 [![Engine Demo](./Videos/instanceRendering.gif)](https://mmuedumy-my.sharepoint.com/:v:/g/personal/hazim_elamin_mohamed_student_mmu_edu_my/IQD4CYTBtFXPQpdba3t6KV-VAWHYc5UXk83_Lcwsebn92rA?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&e=XWowpM)
 
 [![Circles Demo](./Videos/circles.gif)](https://mmuedumy-my.sharepoint.com/:v:/g/personal/hazim_elamin_mohamed_student_mmu_edu_my/IQBmEQDC1rqjQJI_zHbd59y5AbFffZkBLJP5huE0AZOHrrA?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&e=d1tHbE)
@@ -82,9 +84,9 @@ A specialised bullet-hell game engine / toolkit that is optimized to handle larg
 # TODO API
 - [x]  Core Engine Control 
 - [x] Entity and Component Management
-- [ ] Bullet Pattern Authoring
+- [x] Bullet Pattern Authoring
 - [ ] Collision System
-- [ ] Rendering and Visuals
+- [x] Rendering and Visuals
 - [ ] Input Handling
 - [ ] Audio Management
 
@@ -101,7 +103,6 @@ A specialised bullet-hell game engine / toolkit that is optimized to handle larg
 - [x] Add circle rendering  
 - [x] Add camera/view transform  
 - [ ] Add Background rendering for levels  
-- [ ] Add layer/Z ordering  
 - [ ] Implement persistent mapped buffer for high bullet counts  
 - [ ] Add simple text output (bitmap font via instanced quads) for debug  
 - [ ] Add frustum culling to skip off screen  

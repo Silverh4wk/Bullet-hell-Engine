@@ -57,8 +57,8 @@ static void input_handle(void) {
 	qsize[0] += 5;
 	printf("+ \n");
     }
-     if (global.input.escape == KEY_PRESSED || global.input.escape == KEY_HELD)
-     {
+    if (global.input.escape == KEY_PRESSED || global.input.escape == KEY_HELD)
+    {
 	printf("program terminated... \n");
 	global_running = false;
 	engineSetState( STATE_OFF ) ;
@@ -69,21 +69,78 @@ static void input_handle(void) {
 int main(int argc, char *argv[])
 {
     engineInit();
-    
+
+
+
+    vec4 COL_CRIMSON = {1.0f, 0.1f, 0.2f, 1.0f};
+    vec4 COL_WHITE   = {1.0f, 1.f, 1.f, 1.0f};
+    vec4 COL_GOLD    = {1.0f, 0.85f, 0.0f, 1.0f};
+    vec4 COL_VIOLET  = {0.7f, 0.2f, 1.0f, 1.0f};
+    vec4 COL_CYAN    = {0.1f, 0.8f, 1.0f, 1.0f};
+    vec4 COL_ORANGE  = {1.0f, 0.5f, 0.0f, 1.0f};
+    vec4 COL_MAGENTA = {1.0f, 0.0f, 0.7f, 1.0f};
+
     //initiate an entity
     //Build the entity
     //set its data
+    // -----------------------------------------------
+    // 1. create bullet types
+    // -----------------------------------------------
+    GLuint texBulletRed  = renderLoadTexture("I:/FYP/src/assets/cat.png");
+    GLuint texBulletBlue = renderLoadTexture("I:/FYP/src/assets/bullet_texture.png");
 
-//testing
-    Entity entity = entityInit(BODY_PLAYER);
-    entitySetTransform(entity, &(vec2){(real32)global.render.width/2,(real32)global.render.height/2},&(vec2){100,100} ,&(real32){1});
-    entityBuild(entity,SHAPE_QUAD);
-    entityAddPhysics(  entity );
+    uint32 btRed   = bulletTypeCreate((vec4){1,1,1,1}, (vec2){130,120}, 100, 5, texBulletRed); 
+//    uint32 btRed   = bulletTypeCreate((vec4){1,0,0.2,1}, (vec2){30,20}, 100, 5, 0); 
+
+    uint32 btBlue  = bulletTypeCreate((vec4){1,1,1,1}, (vec2){120,130}, 200, 5,texBulletBlue);   
+//    uint32 btBlue  = bulletTypeCreate((vec4){1,1,1,1}, (vec2){20,30}, 200, 5,0);   
+    Entity spawner1 = entityInit(BODY_BULLET); 
+    
+    
+    // -----------------------------------------------
+    // 2. create patterns
+    // -----------------------------------------------
+    // --- Phase 1 --
+    uint32 phase1 = PatternCreate();
+    PatternSetBulletType(phase1, btRed);
+    PatternSetTimingFunction(phase1, TIMING_EASE_IN);
+    PatternSetRotation(phase1, 90.0f);
+    PatternAddCircle(phase1, 36, 220.0f, 0.02f);
+    PatternSetRepeats(phase1, 2);
+    
+    // -----------------------------------------------
+    // 3. Spawn test "enemy" entities 
+    // -----------------------------------------------
+  
+    entitySetTransform(spawner1,
+                       &(vec2){(real32)global.render.width/2, (real32)global.render.height/2},
+                       &(vec2){30,30}, NULL);
+
+    entityBuild(spawner1, SHAPE_CIRCLE);
+
+    entitySetColor(spawner1, (vec4){1,0.4,1,1});
+
+   struct BulletSpawner s1 = { .pattern_id = phase1 };
+   
+   ComponentAttach(spawner1, COMPONENT_BULLET_SPAWNER, &s1);
+   
+   
+    // "player" entity 
+    Entity player = entityInit(BODY_PLAYER);
+    entitySetTransform(player,
+                       &(vec2){600, 400},
+                       &(vec2){20,20}, NULL);
+    entityBuild(player, SHAPE_QUAD);
+    entitySetColor(player, (vec4){1,1,1,1});
+    patternSetPlayerEntity(player);
+
     
     //main game loop
     while ( global_running ) {
-	timeUpdate();
-	
+	if (engineGetState() != STATE_PAUSED )
+	{
+	    timeUpdate();
+	}
 #ifdef DEBUG_MODE
 	fpsUpdate();
 #endif
@@ -104,10 +161,13 @@ int main(int argc, char *argv[])
 	
 	if (engineGetState() != STATE_PAUSED )
 	{
+	    patternSystemUpdate(global.time.delta);
+	    bulletSystemUpdate(global.time.delta);
 	    physicsUpdate();
 	    //broadPhaseResolve(); 
 	    //physicsRemoveInactiveBodies();
-	    shapeMove(g_shapes[entity].shape,pos[0],pos[1]);
+	    shapeMove(g_shapes[player].shape, pos[0], pos[1]);
+	    entitySetTransform(player, &pos, NULL, NULL); 
 	}
 	
 	camera_update( &main_camera, global.time.delta );
@@ -117,13 +177,15 @@ int main(int argc, char *argv[])
 	renderEnd();  //rendering block end
 
 #ifdef DEBUG_MODE
-       if( toggleHitBoxVisual )
-	   drawAllAABB();
+	if( toggleHitBoxVisual )
+	    drawAllAABB();
 #endif
-       
-       timeUpdateLate();
+	
+	if (engineGetState() != STATE_PAUSED )
+	{
+	    timeUpdateLate();
+	}
     }
-    
     engineShutdown();
 
     return 0;

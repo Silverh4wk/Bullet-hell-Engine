@@ -1,6 +1,8 @@
 #ifndef ENGINE_CONTROLS_H
 #define ENGINE_CONTROLS_H
 
+// Engine Includes
+
 #include "../engine/render.h"
 #include "../engine/render/render_internal.h"
 #include "../engine/camera.h"
@@ -13,6 +15,7 @@
 #include "../engine/entity.h"
 #include "../engine/ecs_internal.h"
 #include "../engine/dataStructs.h" //temp name
+#include "pattern.h"
 
 SDL_Event event;              
 Camera main_camera;

@@ -9,7 +9,10 @@
 
 struct Shape;
 
-int32 pseudoRand(int32 n);
+int32  pseudoRand(int32 n);
+real32 lerp(real32 start_angle, real32 end_angle, real32 t);
+real32 degreeToRadians(real32 angle);
+
 void setVec2(vec2 *a, real32 x, real32 y);
 void setVec3(vec3 *a, real32 x, real32 y, real32 z);
 void setVec4(vec4 *a, real32 x, real32 y, real32 z, real32 l);

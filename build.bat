@@ -21,7 +21,7 @@ if not exist "%BUILD_DIR%" mkdir "%BUILD_DIR%"
 
 pushd "%BUILD_DIR%"
 
-cl  /Zi /MD  /I  "%PROJECT_ROOT%\include" ^
+cl  /Zi /MDd  /I  "%PROJECT_ROOT%\include" ^
     %files% %render% %io% %config% %input% %dataStructs% %physics% %times% %objects% %ecs% %API% %debug% %pattern% ^
     /link %libs% /OUT:BHE.exe
 

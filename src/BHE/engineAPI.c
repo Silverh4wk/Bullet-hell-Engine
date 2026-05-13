@@ -14,15 +14,16 @@ enum EngineStates current_state = STATE_OFF;
 void
 engineInit(void)
 {
-    current_state = STATE_INITIALIZING;
     //reminder to untie the engine to the fps (is set to 60 for now)
     timeInit(60);
     config_init();
     physicsInit();
     renderInit();
     InitEnginePools();
+    patternSystemInit();
     camera_init(&main_camera);
     current_state = STATE_READY;
+    
 };
 
 void engineLoadLevel( void );
@@ -36,6 +37,7 @@ void engineShutdown() {
     /*     SDL_CloseJoystick(joystick); */
     /* } */
     renderShutdown();
+    patternSystemShutdown();
     SDL_DestroyWindow(global.render.window);
     SDL_Quit();
 }

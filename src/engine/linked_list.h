@@ -36,7 +36,6 @@ postInsert(Node* node, List* list); /* inserts a new item at the end of the list
 Node *
 orderInsert(Node * node,List * list,size_t idx); /* inserts a new element in order, according to a key field */
 
-
 Node *
 findNode(List* list, size_t idx); /* find a node in the list */
 

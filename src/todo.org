@@ -1,9 +1,9 @@
 * TODO API
 *** DONE Core Engine Control 
 *** DONE Entity and Component Management
-*** TODO [#A] Bullet Pattern Authoring
+*** DONE Bullet Pattern Authoring ( need rechecking )
+*** DONE Rendering and Visuals ( good enuf for now )
 *** TODO [#C] Collision System
-*** TODO [#C] Rendering and Visuals
 *** TODO [#C] Input Handling
 *** TODO [#C] Audio Management
 
@@ -27,17 +27,15 @@
 
 *** DONE Add layer/Z‑ordering
 
+*** TODO [#A] Add simple text output (bitmap font via instanced quads) for debug
+
 *** TODO [#B] Implement persistent mapped buffer for high bullet counts 
 
-*** TODO [#C] Add simple text output (bitmap font via instanced quads) for debug
 
-*** TODO [#C] Add frustum culling to skip off‑screen
 
 * TODO Window events
 
 ** DONE Handle Resize
-
-** TODO [#A] fix the hitbox rendering issues
 
 ** DONE Store updated width/height in a global or struct WindowDimensions (why? idk yet really maybe ill be able to use it later on something)(done).
 
@@ -51,15 +49,4 @@
 
 ** TODO [#B] Handle Close and saving of game data (Dont have a game yet)
 
-** TODO Input
-keyboard events like wasdown and isdown should properly be handled and logged
-mouse inputs cuz its a bullet hell duh
-gamepad, also make sure to handle hotplugging properly
-
-
-
-* TODO Bullet counts
-**Render instancing for bullet meshes. one draw call for atleast 100 bullets
-**Pool Allocate some memory for said bullets, dont delete them unless the stage is finished 
-
-
+** TODO [#C] fix the hitbox rendering issues

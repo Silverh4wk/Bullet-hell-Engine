@@ -24,7 +24,7 @@ struct Transform {
 
 struct Sprite {
     vec4 color;
-    int layer;           // this can be optional for the draw order since we didnt enable the depth buffer
+//  int layer;           //  didnt enable the depth buffer
     uint32 texture_id;   
 } ;
 

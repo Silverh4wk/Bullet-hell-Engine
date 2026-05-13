@@ -1,0 +1,41 @@
+#+TITLE: Core Engine Control
+#+AUTHOR: Hazim Elamin 
+#+EMAIL: Hazemalameen123@gmail.com
+#+DATE: <2026-04-27 Mon>
+
+* Core Engine Control
+
+  These functions listed below are for managing and manipulating the engine lifecycle.
+  
+
+** Functions
+   - [[file:engineControlAPI/engineInit.org][engineInit]]      :: Initialize all core subsystems
+   - [[file:engineControlAPI/engineLoadLevel.org][engineLoadLevel]] :: Load and validate a level package.
+   - [[file:engineControlAPI/engineRun.org][engineRun]]       :: Transition to the main game loop.
+   - [[file:engineControlAPI/enginePause.org][enginePause]]     :: Freeze game simulation.
+   - [[file:engineControlAPI/engineResume.org][engineResume]]    :: Resume a paused game.
+   - [[file:engineControlAPI/engineShutdown.org][engineShutdown]]  :: Safely terminate all subsystems and release resources.
+   - [[file:engineControlAPI/engineSetState.org][engineSetState]]  :: Manually set the engine’s global state.
+   - [[file:engineControlAPI/engineGetState.org][engineGetState]]  :: Query the current engine state.
+
+** Enums
+
+*** [[file:engineControlAPI/ENGINESTATES.org][EngineStates]]
+Since the engine is like a state machine, those enums are used to transition from one state to another.
+
+    - STATE_INITIALIZING :: Engine is booting subsystems.
+    - STATE_READY :: Engine initialized and idle.
+    - STATE_RUNNING :: Main loop is active.
+    - STATE_PAUSED :: Engine logic processing is paused.
+    - STATE_OFF :: Engine is in the OFF state.
+
+*** [[file:engineControlAPI/ENGINECODES.org][EngineCodes]]
+Codes used for debugging 
+    - ENGINE_OK :: Operation completed successfully.
+      
+*** [[file:engineControlAPI/ENGINESCENE.org][EngineScene]]
+(Not implemented yet but to switch between game scenes)
+    - SCENE_MENU :: Main menu scene.
+    - SCENE_JOYSTICK_TEST :: Joystick calibration/demo scene.
+    - SCENE_SETTINGS :: Settings screen.
+    - SCENE_TERMINATE :: Exit the current scene.

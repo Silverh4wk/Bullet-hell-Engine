@@ -1,0 +1,29 @@
+#+TITLE: engineSetState(int state)
+#+AUTHOR: Silver
+#+EMAIL: hazemalameen123@gmail.com
+#+DATE: <2026-04-27 Mon>
+
+
+
+* engineSetState
+  Sets the global engine state.
+
+** Header File
+   Defined in [[file:i:/FYP/src/BHE/engineAPI.h][engineAPI.h]]
+
+** Syntax
+   #+begin_src C
+     void engineSetState(int state);
+   #+end_src
+
+** Function Parameters
+   | Type | Name    | Description                                                       |
+   |------+---------+-------------------------------------------------------------------|
+   | int  | =state= | One of the =EngineStates= enum values: =STATE_INITIALIZING=,     |
+   |      |         | =STATE_READY=, =STATE_RUNNING=, =STATE_PAUSED=, =STATE_OFF=.     |
+
+** Return Value
+   =void=
+
+** Remarks
+   Just make sure to use the correct state enums.

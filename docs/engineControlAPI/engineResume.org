@@ -1,0 +1,28 @@
+#+TITLE: engineResume()
+#+AUTHOR: Silver
+#+EMAIL: hazemalameen123@gmail.com
+#+DATE: <2026-04-27 Mon>
+
+* engineResume
+  Resume a previously paused game.
+
+** Header File
+   Defined in [[file:i:/FYP/src/BHE/engineAPI.h][engineAPI.h]]
+
+** Syntax
+   #+begin_src C
+     void engineResume(void);
+   #+end_src
+
+** Function Parameters
+   | Parameter | Description |
+   |-----------+-------------|
+   | None.     |             |
+
+** Return Value
+   =void=
+
+** Remarks
+   Sets the engine state to =STATE_RUNNING=.
+   This should unpause the engine if it was previously paused.
+   If the engine was on resume before, nothing happens.

@@ -1,0 +1,27 @@
+#+TITLE: Documentation for the pattern creation process API
+#+AUTHOR: Hazim Elamin 
+#+EMAIL: Hazemalameen123@gmail.com
+
+* engineRun
+  Sets the transition state to =STATE_INITIALIZING=.
+
+** Header File
+   Defined in [[file:i:/FYP/src/BHE/engineAPI.h][engineAPI.h]]
+
+** Syntax
+   #+begin_src C
+     void engineRun(void);
+   #+end_src
+
+** Function Parameters
+   | Parameter | Description |
+   |-----------+-------------|
+   | None.     |             |
+
+** Return Value
+   =void=
+
+** Remarks
+   Sets the engine state to =STATE_INITIALIZING=.
+   This function is to be called to put the engine into the initialization state.
+   To be called first before anything.

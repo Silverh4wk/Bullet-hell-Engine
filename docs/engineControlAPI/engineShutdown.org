@@ -1,0 +1,26 @@
+#+TITLE: engineShutdown()
+#+AUTHOR: Silver
+#+EMAIL: hazemalameen123@gmail.com
+#+DATE: <2026-04-27 Mon>
+
+* engineShutdown
+  Shuts down all subModules and systems.
+
+** Header File
+   Defined in [[file:i:/FYP/src/BHE/engineAPI.h][engineAPI.h]]
+
+** Syntax
+   #+begin_src C
+     void engineShutdown(void);
+   #+end_src
+
+** Function Parameters
+   | Parameter | Description |
+   |-----------+-------------|
+   | None.     |             |
+
+** Return Value
+   =void=
+
+** Remarks
+   The engine state becomes =STATE_OFF=.

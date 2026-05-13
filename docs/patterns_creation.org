@@ -1,0 +1,79 @@
+#+TITLE: Documentation for the pattern creation process API
+#+AUTHOR: Hazim Elamin 
+#+EMAIL: Hazemalameen123@gmail.com
+
+* Pattern System API
+
+** Initialization & Shutdown
+*** patternSystemInit
+*** patternSystemShutdown
+*** initPatternSystemPools
+*** patternSystemUpdate
+
+** Global / Context
+*** patternSetPlayerEntity
+*** g_psys
+
+** Bullet Types
+*** BulletTypeCreate
+*** BulletTypeDestroy
+*** BulletTypeGet
+*** BulletTypeSetAcceleration
+*** BulletTypeSetHoming
+
+** Pattern Lifecycle
+*** PatternCreate
+*** PatternDestroy
+
+** Pattern Presets / Generators
+*** PatternCreateCurtainFire
+*** PatternCreateLaser
+*** PatternCreateRandomBarrage
+*** PatternCreateShotgun
+*** PatternCreateStreamingStyle
+
+** Pattern Configuration
+*** PatternSetBulletType
+*** PatternSetColor
+*** PatternSetSpeed
+*** PatternSetSize
+*** PatternSetRotation
+*** PatternSetAcceleration
+*** PatternSetLifetime
+*** PatternSetDuration
+*** PatternSetRepeats
+*** PatternSetOscillation
+*** PatternSetTimingFunction
+
+** Pattern Composition
+*** PatternChainPattern
+
+** Pattern Commands (Adders)
+*** PatternAddAimedAtPlayer
+*** PatternAddArc
+*** PatternAddCircle
+*** PatternAddDelay
+*** PatternAddHoming
+*** PatternAddRandomSpread
+*** PatternAddRing
+*** PatternAddSpiral
+*** PatternAddWave
+*** PatternAddWiggle
+
+** Command Execution Internals
+*** addCommand
+*** advanceFireCommand
+*** executePattern
+*** spawnBullet
+
+** Timing Functions
+*** getTimingFactor
+*** timingEaseLinear
+*** timingEaseIn
+*** timingEaseOut
+*** timingEaseInOut
+
+** Data Structures
+*** struct BulletType
+*** struct Pattern
+*** struct PatternCommand 

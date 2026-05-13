@@ -1,0 +1,8 @@
+#+TITLE: Documentation for the entity and management control API
+#+AUTHOR: Hazim Elamin 
+#+EMAIL: Hazemalameen123@gmail.com
+#+DATE: <2026-04-27 Mon>
+
+
+* Entity and Component Management  
+

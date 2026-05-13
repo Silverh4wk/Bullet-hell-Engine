@@ -1,0 +1,28 @@
+#+TITLE: engineInit()
+#+AUTHOR: Hazim Elamin 
+#+EMAIL: Hazemalameen123@gmail.com
+#+DATE: <2026-04-27 Mon>
+
+* engineInit
+  Initializes all core engine subsystems.
+
+** Header File
+   Defined in [[file:i:/FYP/src/BHE/engineAPI.c][engineAPI.h]]
+
+** Syntax
+   #+begin_src C
+     void engineInit(void);
+   #+end_src
+
+** Function Parameters
+   | Parameter | Description |
+   |-----------+-------------|
+   | None.     |             |
+
+** Return Value
+   =void=
+
+** Remarks
+   Initializes engine modules.
+   Transitions to =STATE_READY= on success.
+   

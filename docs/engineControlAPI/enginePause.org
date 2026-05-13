@@ -1,0 +1,28 @@
+#+TITLE: enginePause()
+#+AUTHOR: Hazim Elamin 
+#+EMAIL: Hazemalameen123@gmail.com
+#+DATE: <2026-04-27 Mon>
+
+* enginePause
+  Pause the game simulation.
+
+** Header File
+   Defined in [[file:i:/FYP/src/BHE/engineAPI.h][engineAPI.h]]
+
+** Syntax
+   #+begin_src C
+     void enginePause(void);
+   #+end_src
+
+** Function Parameters
+   | Parameter | Description |
+   |-----------+-------------|
+   | None.     |             |
+
+** Return Value
+   =void=
+
+** Remarks
+   Sets the engine state to =STATE_PAUSED=. 
+   The game is effectively =Paused= when this function is called, but other engine functions continues.
+   

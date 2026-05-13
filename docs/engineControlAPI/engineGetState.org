@@ -1,0 +1,26 @@
+#+TITLE: engineResume()
+#+AUTHOR: Silver
+#+EMAIL: hazemalameen123@gmail.com
+#+DATE: <2026-04-27 Mon>
+
+* engineGetState
+  Return the current engine state.
+
+** Header File
+   Defined in [[file:i:/FYP/src/BHE/engineAPI.h][engineAPI.h]]
+
+** Syntax
+   #+begin_src C
+     int engineGetState(void);
+   #+end_src
+
+** Function Parameters
+   | Parameter | Description |
+   |-----------+-------------|
+   | None.     |             |
+
+** Return Value
+   =int= – the current value from the =EngineStates= enum.
+
+** Remarks
+   

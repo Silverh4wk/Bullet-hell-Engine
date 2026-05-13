@@ -1,0 +1,32 @@
+#+TITLE: Bullet-Hell Engine API by Category
+#+AUTHOR: Hazim Elamin 
+#+EMAIL: Hazemalameen123@gmail.com
+#+DATE: <2026-04-27 Mon>
+
+* Bullet-Hell Engine API by Category
+** Basics
+
+** [[file:engineControlAPI.org][Core Engine Control]]
+   Initializing, running, and managing the engine life cycle. 
+
+** [[file:entityAndManagementControlAPI.org][Entity and Component Management]]
+   Creating, configuring, and managing game entities.
+
+** [[file:patterns_creation.org][Bullet Pattern Authoring]]
+   Defining and controlling bullet spawners and patterns.
+
+** [[file:collisionSystem.org][Collision System]]
+   Configuring and querying collision interactions. 
+
+** Rendering and Visuals
+   [[Rendering and Visuals][Managing graphics and shaders.]]
+
+** Input Handling
+   [[Input Handling][Reading and mapping player input.]]
+
+** Audio Management
+   [[Audio Management][Managing audio output.]]
+
+** Utility and Debugging
+   [[Utility and Debugging][Logging, profiling, and debugging the level.]]
+

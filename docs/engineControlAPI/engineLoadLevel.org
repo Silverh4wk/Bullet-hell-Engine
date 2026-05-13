@@ -1,0 +1,30 @@
+#+TITLE: engineLoadLevel()
+#+AUTHOR: Hazim Elamin 
+#+EMAIL: Hazemalameen123@gmail.com
+#+DATE: <2026-04-27 Mon>
+
+# get this function done my guy 
+* engineLoadLevel
+  Load and validate a level package for gameplay.
+
+** Header File
+   Defined in [[file:i:/FYP/src/BHE/engineAPI.h][engineAPI.h]]
+
+** Syntax
+   #+begin_src C
+     void engineLoadLevel(void);
+   #+end_src
+
+** Function Parameters
+   | Parameter | Description |
+   |-----------+-------------|
+   | None.     |             |
+   |           |             |
+
+** Return Value
+   =void=
+
+** Remarks
+   Expects a level package (`.lvlpak`) to be available. Parses definitions, validates assets, and populates object pools.
+   The engine should be in =STATE_READY= before calling.
+   On failure, an error is logged and the engine remains in the current state.

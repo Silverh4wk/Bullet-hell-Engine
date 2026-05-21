@@ -9,6 +9,7 @@
 
 struct Shape;
 
+#define MAX(a,b) (((a) > (b)) ? (a) : (b))
 int32  pseudoRand(int32 n);
 real32 lerp(real32 start_angle, real32 end_angle, real32 t);
 real32 degreeToRadians(real32 angle);

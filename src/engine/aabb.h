@@ -10,6 +10,7 @@
     coordinates (coords) - The center point of the bounding box
     dims (dimensions) - The half-width and half-height of the box
 */
+
 typedef struct AABB
 {
     vec2 coords;
@@ -18,7 +19,8 @@ typedef struct AABB
 }AABB;
 
 
-AABB* AABB_new(vec2 coords, vec2 dims);
+AABB*
+AABB_new(float x, float y, float hW, float hH);
 
 
 /// Frees the passed AABB.

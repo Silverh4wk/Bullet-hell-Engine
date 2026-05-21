@@ -5,10 +5,12 @@
 #include "physics_internal.h"
 #include "spatial_hashing.h"
 #include "../entity.h"
+#include "../AABB.h"
 
 static struct PhysicsStateInternal state;
 
-void physicsInit(void)
+void
+physicsInit(void)
 {
     state.body_list = arrayListCreate(sizeof(struct Body), 0);
 }
@@ -20,7 +22,8 @@ void physicsInit(void)
 
 
 // grab all bodies in the game from the global body list and update them accordingly
-static inline void updateBodiesPosition(void)
+static inline
+void updateBodiesPosition(void)
 {
     struct Body *body ;
     for(uint32 i =0 ;i< state.body_list->len;++i)
@@ -49,13 +52,17 @@ static inline void updateBodiesPosition(void)
 
 // should handle all the physics update functions
 // currently only got the position function
-void physicsUpdate(void)
+void
+physicsUpdate(void)
     {
 	updateBodiesPosition();
+	broadPhaseResolve(); 
+	//physicsRemoveInactiveBodies();
     }
 
 //init a body with physics properties
-size_t physicsBodyCreate(struct Shape* sptr,vec2 pos, vec2 size,Type t) {    
+size_t
+physicsBodyCreate(struct Shape* sptr,vec2 pos, vec2 size,Type t) {    
     struct Body body = {
 	.aabb = {
 	    .coords = {pos[0],pos[1]},
@@ -79,13 +86,16 @@ size_t physicsBodyCreate(struct Shape* sptr,vec2 pos, vec2 size,Type t) {
 
 
 // get the total count of physical bodies created
-size_t physicsGetBodyCount(void) { return state.body_list->len; }
+size_t
+physicsGetBodyCount(void) { return state.body_list->len; }
 
 // get a body from the global list via its index
-struct Body* physicsGetBody(size_t i) { return (struct Body*) arrayListGet(state.body_list, i); }
+struct Body*
+physicsGetBody(size_t i) { return (struct Body*) arrayListGet(state.body_list, i); }
 
 
-void physicsBodyDestroy(size_t index)
+void
+physicsBodyDestroy(size_t index)
 {
     if (!state.body_list) return;
 
@@ -98,7 +108,8 @@ void physicsBodyDestroy(size_t index)
 
 // does what it says
 // if you need to remove that specific body
-void physicsBodyDestroyByPtr(struct Body* body)
+void
+physicsBodyDestroyByPtr(struct Body* body)
 {
     if (!state.body_list || !body) return;
 
@@ -114,7 +125,8 @@ void physicsBodyDestroyByPtr(struct Body* body)
     }
 }
 
-void physicsToggleAllHitBoxes(void)
+void
+physicsToggleAllHitBoxes(void)
 {
     for (size_t i = 0; i < state.body_list->len; i++)
     {
@@ -129,7 +141,8 @@ void physicsToggleAllHitBoxes(void)
 // they get removed from the game (note to self, i am not sure if i want this as
 // "dead" objects are meant to stay outside in case they need to get recalled)
 
-void physicsRemoveInactiveBodies(void) {
+void
+physicsRemoveInactiveBodies(void) {
     for (size_t i = 0; i < state.body_list->len; ) {
         struct Body* b = physicsGetBody(i);
         if (!b->active) {
@@ -140,43 +153,65 @@ void physicsRemoveInactiveBodies(void) {
     }
 }
 
-void broadPhaseResolve(void) {
-    if (state.body_list->len == 0) return;
+//https://math.stackexchange.com/questions/2229130/dividing-a-rectangle-into-a-grid-of-rectangles-squares
+/* static inline */
+/* int computeGridSide(real32 W, real32 H, int k) */
+/* { */
+/*     real32 WxH = W* H; */
+/*     real32 no_of_grids = k; */
 
-    // build spatial hash for all active bodies
-    struct SpatialHash* sh = spatialHashCreate();
+/*     int side = floorf(sqrtf(WxH/no_of_grids)); */
+
+/*     return side ; */
+/*     } */
+
+void
+broadPhaseResolve(void) {
+    
+    if (state.body_list->len == 0) return;
+    
+// build spatial hash for all active bodies
+    int spacing = SPATIAL_HASH_SPACING;
+    int maximum_number_of_objects  = (int)state.body_list->len;
+    if((maximum_number_of_objects) == 0) return;
+
+    struct SpatialHash* sh = spatialHashCreate(spacing, maximum_number_of_objects);
+
+    spatialHashBuildAABB(sh);
+
+    struct Array_List* candidates = arrayListCreate(sizeof(struct Body*), 0);
+    
     for (size_t i = 0; i < state.body_list->len; i++) {
         struct Body* body = physicsGetBody(i);
-        if (body->active) {
-            spatialHashInsert(sh, body);
-        }
+        if (body->active)
+	{//ignore if the body isnt active
+	    //will get deleted after
+
+	    //query nearby bodies
+	    spatialHashQuery(sh, body, (int)i);
+	    arrayListClear(candidates);
+	    //add all bodies that are within this body cell
+	    //(TODO:) also reminder to add a check later to see if they are within the same collisoin grp
+	    for (int q = 0; q < sh->query_size; q++)
+	    {
+		
+		int body_idx = sh->query_Ids[q];
+		if (body_idx == (int)i) continue;       // skip self
+	    
+		struct Body* b = physicsGetBody(body_idx);
+		if (b && b->active)
+		{
+		    arrayListAppend(candidates, &b);
+		}
+	    }
+	    narrowPhaseResolve(body, candidates);
+	}
+	
     }
-
-    
-    struct Array_List* candidates = arrayListCreate(sizeof(struct Body*), 0);
-
-    //  query nearby bodies 
-    for (size_t i = 0; i < state.body_list->len; i++) {
-        struct Body* a = physicsGetBody(i);
-        if (!a->active) continue; //ignore if the body isnt active
-	                          //will get deleted after
-
-        // Query radius = half the diagonal of AABB
-        float radius = sqrtf(a->aabb.dims[0] * a->aabb.dims[0] +
-                             a->aabb.dims[1] * a->aabb.dims[1]);
-
-        arrayListClear(candidates);
-        spatialHashQuery(sh, a->aabb.coords, radius, candidates);
-
-        // Narrow phase... test all candidates against 'a'
-        narrowPhaseResolve(a, candidates);
-    }
-
-    
-    spatialHashDestroy(sh);
     arrayListDestroy(candidates);
+    spatialHashDestroy(sh);
+    
 }
-
 
 
 void narrowPhaseResolve(struct Body* a, struct Array_List* candidates) {
@@ -186,7 +221,6 @@ void narrowPhaseResolve(struct Body* a, struct Array_List* candidates) {
         if (!b->active) continue;
     }
 }
-
 
 void physicsClearBodies(void)
 {

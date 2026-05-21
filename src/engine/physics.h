@@ -13,6 +13,9 @@ typedef void (*CollisionCallback)(struct Body* self, struct Body* other);
 
 typedef enum {
   BODY_PLAYER,
+  BODY_ENEMY,
+  BODY_SPAWNER,
+  BODY_ITEM,
   BODY_BULLET,
 } Type;
 

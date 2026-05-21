@@ -30,7 +30,7 @@ entityInit( Type t )
         initialized = 1;
     }
 
-    if ( g_next_free >= MAX_ENTITIES ) {
+    if ( g_next_free +1 >= MAX_ENTITIES ) {
         return 0; //log this laters
     }
     // add the entity to the array
@@ -148,6 +148,7 @@ entitySetTransform(Entity entity, vec2* pos, vec2* size,real32* angle) {
     if ( angle!= NULL )
 	transform->rotation = *angle;
 }
+
 
 void
 entityAddPhysics( Entity entity )

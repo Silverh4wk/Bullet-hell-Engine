@@ -5,7 +5,8 @@
 //#include "../hash_table.h"
 #include "../array_list.h"
 #include "../../helpers.h"
-#include "../physics.h"
+
+#define SPATIAL_HASH_SPACING 32 
 
 
 struct SpatialHash{
@@ -28,12 +29,11 @@ void
 spatialHashDestroy(struct SpatialHash* sh);
 
 void
-spatialHashBuildPoints(struct SpatialHash *sh);
+spatialHashBuildAABB(struct SpatialHash *sh);
+
 
 void
-spatialHashQuery(struct SpatialHash *sh, 
-		 struct Body *b, int object_id);
-
+spatialHashQuery(struct SpatialHash * sh,struct Body* b, int object_id);
     /* void */
 /* makeCellKey(int x, int y, char *out, size_t outSize); */
 

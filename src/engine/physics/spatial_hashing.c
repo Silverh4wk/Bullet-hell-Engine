@@ -1,8 +1,7 @@
 #include "spatial_hashing.h"
-#include "physics.h"
 #include <linmath.h>
 #include "stdlib.h"
-
+#include "../physics.h"
 
 
 //create and return spatial hash table
@@ -16,7 +15,8 @@ struct SpatialHash *spatialHashCreate(int spacing, int maximum_number_of_objects
     sh->max_entries = maximum_number_of_objects * 9;
     sh->cell_start = (int32*)malloc(sizeof(int32) * (sh->table_size + 1));
     sh->cell_entries = (int32*)malloc(sizeof(int32) *  sh->max_entries);
-    sh->query_Ids = (int32*)malloc(sizeof(int32) *  maximum_number_of_objects);
+    sh->query_Ids = (int32*)malloc(sizeof(int32) * sh->max_entries);
+
     sh->query_size = 0;
 
     return sh;
@@ -125,7 +125,7 @@ spatialHashBuildAABB(struct SpatialHash* sh) {
 
 
 void
-spatialHashQuery(struct SpatialHash * sh,struct Body* b,int object_id) {
+spatialHashQuery(struct SpatialHash * sh,struct Body* b, int object_id) {
 
     real32 minX = b->aabb.coords[0] - b->aabb.dims[0];
     real32 maxX = b->aabb.coords[0] + b->aabb.dims[0];
@@ -150,7 +150,10 @@ spatialHashQuery(struct SpatialHash * sh,struct Body* b,int object_id) {
                 int body_idx = sh->cell_entries[idx];
 		//skip if same body
 		if (body_idx == object_id) continue;
-                sh->query_Ids[sh->query_size++] = body_idx;
+		if (sh->query_size < sh->max_entries) {
+		    sh->query_Ids[sh->query_size++] = body_idx;
+		}
+		
             }
         }
     }

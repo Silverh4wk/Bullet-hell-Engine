@@ -159,6 +159,7 @@ bulletTypeGet(  uint32 id  ) {
 
 
 void bulletFreeListPush( Entity e ) {
+    if(e==0) return;
     if ( bulletFreeCount < MAX_BULLETS ) {
         bulletFreeList[bulletFreeCount++] = e;
         if ( bulletActiveCount > 0 ) --bulletActiveCount;
@@ -167,7 +168,8 @@ void bulletFreeListPush( Entity e ) {
 
 Entity bulletFreeListPop( void ) {
     if ( bulletFreeCount > 0 ) {
-        Entity e = bulletFreeList[bulletFreeCount--];
+	--bulletFreeCount;
+        Entity e = bulletFreeList[bulletFreeCount];
         ++bulletActiveCount;
         return e;
     }

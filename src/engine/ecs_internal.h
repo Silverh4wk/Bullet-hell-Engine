@@ -6,7 +6,7 @@
 #include "../types.h"
 #include "physics.h"
 
-#define MAX_ENTITIES 1024
+#define MAX_ENTITIES 4096
 
 // bitewise operations helpers
 #define HAS_COMPONENT(e, t) (g_component_mask[e] & (1ULL << (t))) // check if this component mask is on or not 

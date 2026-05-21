@@ -8,7 +8,7 @@ set "input=%PROJECT_ROOT%\src\engine\input.c"
 set "config=%PROJECT_ROOT%\src\engine\config.c"
 set "ecs=%PROJECT_ROOT%\src\engine\ecs\ecs.c"
 set "times=%PROJECT_ROOT%\src\engine\time.c"
-set "physics=%PROJECT_ROOT%\src\engine\physics\physics.c %PROJECT_ROOT%\src\engine\physics\spatial_hashing.c"
+set "physics=%PROJECT_ROOT%\src\engine\physics\physics.c %PROJECT_ROOT%\src\engine\physics\spatial_hashing.c %PROJECT_ROOT%\src\engine\physics\AABB.c"
 set "dataStructs=%PROJECT_ROOT%\src\engine\dataStructs\array_list.c %PROJECT_ROOT%\src\engine\dataStructs\hash_table.c %PROJECT_ROOT%\src\engine\dataStructs\pool_allocator.c %PROJECT_ROOT%\src\engine\dataStructs\linked_list.c %PROJECT_ROOT%\src\engine\dataStructs\Quad_trees.c %PROJECT_ROOT%/src/engine/dataStructs/dataStructs.c"
 set "debug=%PROJECT_ROOT%\src\engine\Profiling\FPS_counter.c"
 set "pattern=%PROJECT_ROOT%\src\BHE\pattern.c"
@@ -22,7 +22,7 @@ if not exist "%BUILD_DIR%" mkdir "%BUILD_DIR%"
 pushd "%BUILD_DIR%"
 
 cl  /Zi /MDd  /I  "%PROJECT_ROOT%\include" ^
-    %files% %render% %io% %config% %input% %dataStructs% %physics% %times% %objects% %ecs% %API% %debug% %pattern% ^
+   /DDEBUG_MODE %files% %render% %io% %config% %input% %dataStructs% %physics% %times% %objects% %ecs% %API% %debug% %pattern% ^
     /link %libs% /OUT:BHE.exe
 
 popd

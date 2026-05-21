@@ -168,8 +168,8 @@ entityAddPhysics( Entity entity )
 	body = physicsGetBody( bodyIdx );
 	body->aabb.coords[ 0 ] = transform->position[ 0 ];
 	body->aabb.coords[ 1 ] = transform->position[ 1 ];
-	body->aabb.dims  [ 0 ] = transform->size    [ 0 ];
-	body->aabb.dims  [ 1 ] = transform->size    [ 1 ];
+	body->aabb.dims  [ 0 ] = transform->size    [ 0 ] * 0.5;
+	body->aabb.dims  [ 1 ] = transform->size    [ 1 ] * 0.5;
 	body->active = true; //enable physics by default
     }
     

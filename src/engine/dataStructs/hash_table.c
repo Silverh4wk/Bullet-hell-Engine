@@ -1,3 +1,5 @@
+// im switching over to sean barret hashmap instead and hope it works better
+
 #include "../hash_table.h"
 
 

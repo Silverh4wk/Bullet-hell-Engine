@@ -9,11 +9,22 @@ layout (location = 6) in vec4 instance_color;
 out vec2 uvs;
 out vec4 color;
 
+uniform mat4 model;
+uniform bool use_uniform_model;
+
+uniform vec4 uniform_color;
+uniform bool use_uniform_color;
+
 uniform mat4 projection;
 
 void main(){
+
      uvs = a_uvs;
-     color = instance_color;
+     color = use_uniform_color ? uniform_color:instance_color;
+
+     mat4 finalModel = use_uniform_model ? model: instance_model;
      
-     gl_Position = projection * instance_model * vec4(a_pos,1.0);
+     
+
+     gl_Position = projection * finalModel * vec4(a_pos,1.0);
 }

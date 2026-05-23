@@ -271,7 +271,8 @@ renderSubmitShape(struct Shape* shape) {
 }
 
 //render the visual representation of AABB bodies 
-void renderAABB(AABB* aabb, vec4 color) {
+void renderAABB(AABB* aabb, vec4 color, int toggle) {
+
     if (!aabb) return;
 
     glUseProgram(state.shader_default);
@@ -282,32 +283,69 @@ void renderAABB(AABB* aabb, vec4 color) {
 
     mat4x4 model;
     mat4x4_identity(model);
-    mat4x4_translate(model, aabb->coords[0], aabb->coords[1], 0);
-    mat4x4_scale_aniso(model, model, w, h, 1);
+    mat4x4_translate(model, aabb->coords[0], aabb->coords[1], 1);
+    mat4x4_scale_aniso(model, model, w, h, 0);
 
-    glUniformMatrix4fv(glGetUniformLocation(state.shader_default, "model"),
-                       1, GL_FALSE, &model[0][0]);
-    glUniform4fv(glGetUniformLocation(state.shader_default, "color"), 1, color);
-    vec4 white = { 255,255,255,1};
+       glUniform1i(
+        glGetUniformLocation(state.shader_default, "use_uniform_model"),
+        1
+    );
+
+    glUniform1i(
+        glGetUniformLocation(state.shader_default, "use_uniform_color"),
+        1
+    );
+
+    // upload uniforms
+    glUniformMatrix4fv(
+        glGetUniformLocation(state.shader_default, "model"),
+        1,
+        GL_FALSE,
+        &model[0][0]
+    );
+
+    glUniform4fv(
+        glGetUniformLocation(state.shader_default, "uniform_color"),
+        1,
+        color
+    );
+
+    glUniform1i(
+        glGetUniformLocation(state.shader_default, "useTexture"),
+        0
+    );
+    
     glBindVertexArray(state.vao_quad);
     
-    glUniform1i(glGetUniformLocation(state.shader_default, "useTexture"), 0);
-    
-    // draw the outline of the quad using GL_LINE 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    // draw the outline of the quad using GL_LINE
+    if (toggle)
+    {
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
+    else 
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     glBindVertexArray(0);
+
+        glUniform1i(
+        glGetUniformLocation(state.shader_default, "use_uniform_model"),
+        0
+    );
+
+    glUniform1i(
+        glGetUniformLocation(state.shader_default, "use_uniform_color"),
+        0
+    );
 }
 
 void
-drawAllAABB(void) {
+drawAllAABB(int toggle) {
     size_t count = physicsGetBodyCount();
-    vec4 wireColor = {1.0f,0.0f,0.0f,1.0f};
+    vec4 wireColor = {1.0f,0.0f,0.0f,1.0f}; //red
     for (size_t i = 0; i < count; i++) {
         struct Body* body = physicsGetBody(i);
-	renderAABB(&body->aabb,wireColor);
+	renderAABB(&body->aabb,wireColor, toggle);
         
     }
 }

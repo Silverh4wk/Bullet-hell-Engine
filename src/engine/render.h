@@ -9,6 +9,8 @@
 #include "render/render_internal.h"
 #include <SDL3/SDL.h>
 
+#define DEFAULT_WIDTH 1280
+#define DEFAULT_HEIGHT 720
 
 struct Render_State
 {
@@ -40,7 +42,7 @@ renderShape(struct Shape* shape);
 
 //Helper function to render the bounding box to the screen
 void
-renderAABB(struct AABB *aabb, vec4 color);
+renderAABB(struct AABB *aabb, vec4 color, int toggle);
 
 
 // render the ecs
@@ -49,7 +51,7 @@ renderECS(void);
 
 //render all bounding boxes using renderAABB()
 void
-drawAllAABB(void);
+drawAllAABB(int toggle);
 
 void
 renderShutdown(void);

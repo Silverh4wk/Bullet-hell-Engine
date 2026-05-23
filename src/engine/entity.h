@@ -18,7 +18,7 @@ entityDestroy( Entity entity );
 
 
 void
-entityBuild(Entity entity, ShapeType shape_t);
+entityBuild(Entity entity, ShapeType shape_t, int t_physics);
 
 // return the entity transform data
 struct Transform*

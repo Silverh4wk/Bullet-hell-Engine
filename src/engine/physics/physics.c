@@ -26,12 +26,16 @@ static inline
 void updateBodiesPosition(void)
 {
     struct Body *body ;
+    
     for(uint32 i =0 ;i< state.body_list->len;++i)
     {
-        body = (struct Body*) arrayListGet(state.body_list, i);
-        body->velocity[0] += body->acceleration[0] * global.time.delta;
-        body->velocity[1] += body->acceleration[1] * global.time.delta;
+	
+	body = (struct Body*) arrayListGet(state.body_list, i);
 
+        if (body->active == false) continue;
+	body->velocity[0] += body->acceleration[0] * global.time.delta;
+        body->velocity[1] += body->acceleration[1] * global.time.delta;
+	
 	 body->aabb.coords[0] += body->velocity[0] * global.time.delta;
 	 body->aabb.coords[1] += body->velocity[1] * global.time.delta;
 	 //update the visual shape pos accordingly
@@ -56,7 +60,7 @@ void
 physicsUpdate(void)
     {
 	updateBodiesPosition();
-	broadPhaseResolve(); 
+	//broadPhaseResolve(); 
 	//physicsRemoveInactiveBodies();
     }
 
@@ -72,7 +76,10 @@ physicsBodyCreate(struct Shape* sptr,vec2 pos, vec2 size,Type t) {
 	.onCollision = NULL,
 	.type = t,
 	.sptr = sptr,
-    .entity = 0,
+	.entity = 0,
+	.active = true,
+	.lifetime = 0,
+	.hp = 1,
 // if i ever think of adding gravity but who knows (this thought was stupid of me, im a changed man now)	
 //.gravity  = 9.80665f,
     };
@@ -195,7 +202,7 @@ broadPhaseResolve(void) {
 	    for (int q = 0; q < sh->query_size; q++)
 	    {
 		
-		int body_idx = sh->query_Ids[q];
+		int body_idx = *(int*)arrayListGet(sh->query_Ids,q);
 		if (body_idx == (int)i) continue;       // skip self
 	    
 		struct Body* b = physicsGetBody(body_idx);
@@ -219,6 +226,9 @@ void narrowPhaseResolve(struct Body* a, struct Array_List* candidates) {
         struct Body* b = *(struct Body**)arrayListGet(candidates, j);
         if (a == b) continue;
         if (!b->active) continue;
+	if (a->type ==BODY_PLAYER && b->type == BODY_ENEMY)
+	    if (AABB_intersects(&a->aabb, &b->aabb))
+		printf("A and B are colliding at %f : %f", a->aabb.coords[0],a->aabb.coords[1]);
     }
 }
 

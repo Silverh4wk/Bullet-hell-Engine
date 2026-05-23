@@ -33,9 +33,10 @@ entityInit( Type t )
     if ( g_next_free +1 >= MAX_ENTITIES ) {
         return 0; //log this laters
     }
-    // add the entity to the array
+    // push the entity into the array
     Entity entity = ++g_next_free;
     g_type[entity] = t;
+
     //assigning vals to zeroes
     g_component_mask[entity] = 0; //no components attached
     g_body_indices[entity] = -1; // no body attached
@@ -56,7 +57,7 @@ entityInit( Type t )
     return entity;
 }
 
-void entityBuild( Entity entity, ShapeType shape_t )
+void entityBuild( Entity entity, ShapeType shape_t, int t_physics )
 {
     struct Transform* transform = entityGetTransform( entity );
     if ( !transform ) return;
@@ -65,17 +66,17 @@ void entityBuild( Entity entity, ShapeType shape_t )
     
     if ( !HAS_COMPONENT( entity, COMPONENT_SHAPE ) )
     {
-        vec4 color = {0,1,1,1}; //default color
+        vec4 color = {1,1,1,1}; //default color
 
         struct ShapeUnion shape_union = {0};
 	
 	if( shape_t == SHAPE_QUAD )
 	{
-	    shape_union = shapeQuadCreate(pos,size,&color,0,false); // physics remain off unless u decide to add a physical body
+	    shape_union = shapeQuadCreate(pos,size,&color,0,t_physics); // physics remain off unless u decide to add a physical body
 	}
 	else if ( shape_t == SHAPE_CIRCLE )
 	{
-	    shape_union = shapeCircleCreate(pos,size[0],&color,0,false); // physics remain off unless u decide to add a physical body
+	    shape_union = shapeCircleCreate(pos,size[0],&color,0,t_physics); // physics remain off unless u decide to add a physical body
 	}
 	struct ShapeComponent shape_component = { .shape = shape_union.shape };
 	ComponentAttach(entity, COMPONENT_SHAPE, &shape_component);
@@ -104,13 +105,13 @@ entityGetTransform( Entity entity ) {
 }
 
 
-static void
+static inline void
 ensurePhysicsBody( Entity entity ) {
     //a body is already attached
     //skip this step
     if (g_body_indices[entity] != -1) return;
     //no shape, return
-   if ( ! HAS_COMPONENT( entity, COMPONENT_SHAPE ) ) return;
+    if ( ! HAS_COMPONENT( entity, COMPONENT_SHAPE ) ) return;
 
     struct Transform* transform = &g_transforms[entity];
     vec2 pos = { transform->position[0], transform->position[1] };
@@ -166,13 +167,25 @@ entityAddPhysics( Entity entity )
     if ( bodyIdx != -1 )
     {
 	body = physicsGetBody( bodyIdx );
+	// i really do not like this but the physics body follow the coordinates of the body
 	body->aabb.coords[ 0 ] = transform->position[ 0 ];
 	body->aabb.coords[ 1 ] = transform->position[ 1 ];
-	body->aabb.dims  [ 0 ] = transform->size    [ 0 ] * 0.5;
-	body->aabb.dims  [ 1 ] = transform->size    [ 1 ] * 0.5;
-	body->active = true; //enable physics by default
+
+        if (g_type[entity] == BODY_PLAYER)
+	{
+	    // for player entities, we want to give them the illusion of power
+	    // if the dev doesnt want this, they can override the hitbox later
+	    // using the same function
+	    int player_hitbox = 1;
+	    body->aabb.dims  [ 0 ] = player_hitbox   *  0.5;
+	    body->aabb.dims  [ 1 ] = player_hitbox   *  0.5;
+	}
+	else
+	{
+	    body->aabb.dims  [ 0 ] = transform->size    [ 0 ] * 0.5;
+	    body->aabb.dims  [ 1 ] = transform->size    [ 1 ] * 0.5;
+	}
     }
-    
 };
 
 void
@@ -192,6 +205,7 @@ entitySetTexture(Entity entity, GLuint tex) {
     if (!HAS_COMPONENT(entity, COMPONENT_SHAPE)) return;
     g_shapes[entity].shape->texture = tex;
 }
+
 
 void
 collisionSetHitboxBox( Entity entity, int width, int height ) {

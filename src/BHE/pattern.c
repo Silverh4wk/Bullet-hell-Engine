@@ -978,7 +978,7 @@ static void spawnbullet( const struct PatternCommand *cmd, int bullet_idx, Entit
     // Set transform
     entitySetTransform( bullet, &pos, &size, NULL );
     // Build shape ( quad for now.. extend to circle if needed )
-    entityBuild( bullet, SHAPE_QUAD );
+    entityBuild( bullet, SHAPE_QUAD, true );// all bullets should have physical bodies
     entitySetColor( bullet, color );
     entitySetTexture( bullet, bt->texture );
 

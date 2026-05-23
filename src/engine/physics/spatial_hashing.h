@@ -13,11 +13,9 @@ struct SpatialHash{
     int spacing; // its better to have the spacing h = 2r 
     int table_size;
     int query_size;
-    int max_objects;
-    int max_entries;  
-    int32 *cell_start;
-    int32 *cell_entries;
-    int32 *query_Ids;
+    struct Array_List *cell_start;
+    struct Array_List *cell_entries;
+    struct Array_List *query_Ids;
  } ;
 
 
@@ -34,7 +32,8 @@ spatialHashBuildAABB(struct SpatialHash *sh);
 
 void
 spatialHashQuery(struct SpatialHash * sh,struct Body* b, int object_id);
-    /* void */
+
+/* void */
 /* makeCellKey(int x, int y, char *out, size_t outSize); */
 
 /* void */

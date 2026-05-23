@@ -9,13 +9,26 @@ struct SpatialHash *spatialHashCreate(int spacing, int maximum_number_of_objects
 {
     struct SpatialHash* sh = (struct SpatialHash*) malloc(sizeof(struct SpatialHash));
 
-    sh->spacing = spacing;
-    sh->table_size = 2 *  maximum_number_of_objects;
-    sh->max_objects =  maximum_number_of_objects;
-    sh->max_entries = maximum_number_of_objects * 9;
-    sh->cell_start = (int32*)malloc(sizeof(int32) * (sh->table_size + 1));
-    sh->cell_entries = (int32*)malloc(sizeof(int32) *  sh->max_entries);
-    sh->query_Ids = (int32*)malloc(sizeof(int32) * sh->max_entries);
+    sh->spacing      = spacing;
+    sh->table_size   = 2 *  maximum_number_of_objects;
+
+    sh->cell_start   = arrayListCreate(sizeof(int32), sh->table_size+1);
+    for (int i = 0; i <= sh->table_size; i++) {
+	int zero = 0;
+	arrayListAppend(sh->cell_start, &zero);
+    }
+
+    sh->cell_entries = arrayListCreate(sizeof(int32),  maximum_number_of_objects);
+    for (int i = 0; i < maximum_number_of_objects; i++) {
+	int zero = 0;
+	arrayListAppend(sh->cell_entries, &zero);
+    }
+
+    sh->query_Ids    = arrayListCreate(sizeof(int32),  maximum_number_of_objects);
+    for (int i = 0; i < maximum_number_of_objects; i++) {
+	int zero = 0;
+	arrayListAppend(sh->query_Ids, &zero);
+    }
 
     sh->query_size = 0;
 
@@ -25,10 +38,9 @@ struct SpatialHash *spatialHashCreate(int spacing, int maximum_number_of_objects
 void
 spatialHashDestroy(struct SpatialHash* sh)
 {
-    
-    free(sh->cell_start);
-    free(sh->cell_entries);
-    free(sh->query_Ids);
+    arrayListDestroy(sh->cell_start);
+    arrayListDestroy(sh->cell_entries);
+    arrayListDestroy(sh->query_Ids);
     free(sh);
 }
 
@@ -45,49 +57,68 @@ worldToCell(real32 coordinate, int spacing)
     return (int)floorf(coordinate / spacing);
 };
 
-
+//im not smart enough for this, had ai help me 
 void                                                                //get from the global body list
 spatialHashBuildAABB(struct SpatialHash* sh) {
 
     int num_bodies = physicsGetBodyCount();
-    if (num_bodies > sh->max_objects) num_bodies = sh->max_objects;
-
+    int max_objects = sh->cell_entries->len;
+    if (num_bodies > max_objects) num_bodies = max_objects;
+    
     //determine cell sizes
-    memset(sh->cell_start, 0, sizeof(int32) * (sh->table_size +1));
-    memset(sh->cell_entries, 0, sizeof(int32) * sh->max_entries);
+    for (int i = 0; i <= sh->table_size; i++) {
+	*(int*)arrayListGet(sh->cell_start, i) = 0;
+    }
     
     for (int i = 0; i < num_bodies; i++) {
         struct Body* b = physicsGetBody(i);
-
+	
 	real32 minX = b->aabb.coords[0] - b->aabb.dims[0];
 	real32 maxX = b->aabb.coords[0] + b->aabb.dims[0];
 	real32 minY = b->aabb.coords[1] - b->aabb.dims[1];
 	real32 maxY = b->aabb.coords[1] + b->aabb.dims[1];
 	
 	int cx0 = worldToCell(minX, sh->spacing);
-        int cx1 = worldToCell(maxX, sh->spacing);
-        int cy0 = worldToCell(minY, sh->spacing);
-        int cy1 = worldToCell(maxY, sh->spacing);
+       int cx1 = worldToCell(maxX, sh->spacing);
+       int cy0 = worldToCell(minY, sh->spacing);
+       int cy1 = worldToCell(maxY, sh->spacing);
 
 	// increment each bucket for each cell
-	for (int cx = cx0; cx <= cx1; cx++) {
-	    for (int cy = cy0; cy <= cy1; cy++) {
-                int h = hashCoords(cx, cy, 0, sh->table_size);
-                sh->cell_start[h]++;
-            }
+       for (int cx = cx0; cx <= cx1; cx++) {
+	   for (int cy = cy0; cy <= cy1; cy++) {
+	       int h = hashCoords(cx, cy, 0, sh->table_size);
+	       (*(int*)arrayListGet(sh->cell_start, h))++;
+	    }
 	}
     }
     
     // determine cell starts
     int start = 0;
     for (int i = 0; i < sh->table_size; i++) {
-        start += sh->cell_start[i];
-        sh->cell_start[i] = start;
+        int* cs = (int*)arrayListGet(sh->cell_start, i);
+	start += *cs;
+	*cs = start;
     }
     
-    sh->cell_start[sh->table_size] = start;   // guard
+    *(int*)arrayListGet(sh->cell_start, sh->table_size) = start;   // guard
 
+    
+    int total_entries = start;
+    if(total_entries > (int)sh->cell_entries->len)
+    {
+	int* new_entries = realloc(sh->cell_entries->items, total_entries*sizeof(int));
 
+	if(!new_entries) return;
+	sh->cell_entries->items = new_entries;
+	sh->cell_entries->capacity = total_entries;
+	sh->cell_entries->len = total_entries;
+
+	int* new_query = realloc(sh->query_Ids->items, total_entries*sizeof(int));
+	if(!new_query) return;
+	sh->query_Ids->items =new_query;
+	sh->query_Ids->capacity = total_entries;
+	sh->query_Ids->len = total_entries;
+    }
     //  fill in objectids
 
     for (int i = 0; i < num_bodies; i++) {
@@ -106,12 +137,10 @@ spatialHashBuildAABB(struct SpatialHash* sh) {
 	for (int cx = cx0; cx <= cx1; cx++) {
             for (int cy = cy0; cy <= cy1; cy++) {
 		int h = hashCoords(cx, cy, 0, sh->table_size);
-		sh->cell_start[h]--;
-		int idx = sh->cell_start[h];
-                if (idx < 0 || idx >= sh->max_entries) {
-                    return;// return if exceed for now
-                }
-		sh->cell_entries[idx] = i;
+		int* start_ptr = (int*)arrayListGet(sh->cell_start, h);
+		(*start_ptr)--;
+		int idx = *start_ptr;
+		*(int*)arrayListGet(sh->cell_entries,idx) = i; 
             }
         }
     }
@@ -125,8 +154,10 @@ spatialHashBuildAABB(struct SpatialHash* sh) {
 
 
 void
-spatialHashQuery(struct SpatialHash * sh,struct Body* b, int object_id) {
+spatialHashQuery(struct SpatialHash * sh,struct Body* b, int object_id){
 
+    int max_objects = sh->cell_entries->len;
+	
     real32 minX = b->aabb.coords[0] - b->aabb.dims[0];
     real32 maxX = b->aabb.coords[0] + b->aabb.dims[0];
     real32 minY = b->aabb.coords[1] - b->aabb.dims[1];
@@ -143,16 +174,15 @@ spatialHashQuery(struct SpatialHash * sh,struct Body* b, int object_id) {
         for (int cy = cy0; cy <= cy1; cy++) {
 	    
             int h = hashCoords(cx, cy, 0, sh->table_size);
-            int start = sh->cell_start[h];
-            int end = sh->cell_start[h + 1];
+            int start = *(int*)arrayListGet(sh->cell_start, h);
+            int end =   *(int*)arrayListGet(sh->cell_start,h + 1);
 
-	    for (int idx = start; idx < end; idx++) {
-                int body_idx = sh->cell_entries[idx];
-		//skip if same body
-		if (body_idx == object_id) continue;
-		if (sh->query_size < sh->max_entries) {
-		    sh->query_Ids[sh->query_size++] = body_idx;
-		}
+	    for (int i = start; i < end; i++) {
+		if(sh->query_size >= (int)sh->query_Ids->len)
+		    break;
+		int* qs = (int*)arrayListGet(sh->query_Ids, sh->query_size);
+		*qs = *(int*)arrayListGet(sh->cell_entries, i);
+		sh->query_size++;
 		
             }
         }

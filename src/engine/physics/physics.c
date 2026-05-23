@@ -60,7 +60,7 @@ void
 physicsUpdate(void)
     {
 	updateBodiesPosition();
-	//broadPhaseResolve(); 
+	broadPhaseResolve(); 
 	//physicsRemoveInactiveBodies();
     }
 

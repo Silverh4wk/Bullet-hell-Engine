@@ -1,10 +1,17 @@
 #ifndef ENGINE_CONTROLS_H
 #define ENGINE_CONTROLS_H
 
-// Engine Includes
+#include <glad/glad.h>
+#include "SDL3/SDL.h"
+#include <stdio.h>
+#include "stdlib.h"
+#include "../keyboardTable.h"
+#include "../helpers.h"
 
+// Engine Includes
 #include "../engine/render.h"
 #include "../engine/render/render_internal.h"
+#include "../Util/colors.h"
 #include "../engine/camera.h"
 #include "../objects/shapes.h"
 #include "../engine/global.h"
@@ -16,6 +23,8 @@
 #include "../engine/ecs_internal.h"
 #include "../engine/dataStructs.h" //temp name
 #include "pattern.h"
+#include "../engine/FPS_counter.h"
+#include "../engine/debug_info.h"
 
 SDL_Event event;              
 Camera main_camera;
@@ -56,7 +65,6 @@ void engineResume( void );
 void engineShutdown( void );
 int  engineGetState( void );
 void engineSetState( int state );
-
 
 
 

@@ -40,6 +40,8 @@ void engineShutdown() {
     patternSystemShutdown();
     SDL_DestroyWindow(global.render.window);
     SDL_Quit();
+    printf("Successfully closed all systems\n");
+    
 }
 
 

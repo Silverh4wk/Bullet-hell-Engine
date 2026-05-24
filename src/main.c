@@ -1,9 +1,3 @@
-#include <glad/glad.h>
-#include "SDL3/SDL.h"
-#include <stdio.h>
-#include "stdlib.h"
-#include "keyboardTable.h"
-#include "helpers.h"
 #include "BHE/engineAPI.h"
 
 // these stays to help with testing 
@@ -12,7 +6,7 @@ global_variable vec2 pos;
 global_variable vec2 qsize;
 global_variable real32 angle;
 
-
+Entity player;
 
 //MOVE THIS (soon just wait) 
 static void input_handle(void) {
@@ -53,7 +47,7 @@ static void input_handle(void) {
     }
     if (global.input.hplus == KEY_PRESSED || global.input.hplus == KEY_HELD)
     {
-	
+		entitySetTransform(player, &(vec2){(float)global.render.width/2,(float)global.render.height/2}, NULL, NULL); 
 	printf("+ \n");
     }
     if (global.input.escape == KEY_PRESSED || global.input.escape == KEY_HELD)
@@ -70,22 +64,13 @@ int main(int argc, char *argv[])
     engineInit();
 
 
-
-    vec4 COL_CRIMSON = {1.0f, 0.1f, 0.2f, 1.0f};
-    vec4 COL_WHITE   = {1.0f, 1.f, 1.f, 1.0f};
-    vec4 COL_GOLD    = {1.0f, 0.85f, 0.0f, 1.0f};
-    vec4 COL_VIOLET  = {0.7f, 0.2f, 1.0f, 1.0f};
-    vec4 COL_CYAN    = {0.1f, 0.8f, 1.0f, 1.0f};
-    vec4 COL_ORANGE  = {1.0f, 0.5f, 0.0f, 1.0f};
-    vec4 COL_MAGENTA = {1.0f, 0.0f, 0.7f, 1.0f};
-
     // "player" entity 
-    Entity player = entityInit(BODY_PLAYER);
+    player = entityInit(BODY_PLAYER);
     entitySetTransform(player,
-                       &(vec2){600, 400},
+                       &(vec2){500, 500},
                        &(vec2){100,100}, NULL);
     entityBuild(player, SHAPE_QUAD, true);
-    entitySetColor(player, COL_CYAN);
+    entitySetColor(player, COL_AMBER);
     camera_follow(&main_camera, pos, 5.0f);
 
     /* //"enemy" entity */
@@ -95,17 +80,16 @@ int main(int argc, char *argv[])
     /*                    &(vec2){100,100}, NULL); */
     /* entityBuild(enemy, SHAPE_CIRCLE, true); */
     /* entitySetColor(enemy, COL_CRIMSON); */
+    	char buffer [1024];
 
     
     //main game loop
     while ( global_running ) {
-	if (engineGetState() != STATE_PAUSED )
+
+        if (engineGetState() != STATE_PAUSED )
 	{
 	    timeUpdate();
 	}
-#ifdef DEBUG_MODE
-	fpsUpdate();
-#endif
 	
 	while (SDL_PollEvent(&event)) {
 	    if (event.type == SDL_EVENT_QUIT) {
@@ -127,7 +111,7 @@ int main(int argc, char *argv[])
 	    bulletSystemUpdate(global.time.delta);
 	    physicsUpdate();
 	    shapeMove(g_shapes[player].shape, pos[0], pos[1]);
-	    entitySetTransform(player, &pos, NULL, NULL); 
+
 	}
 	
 	camera_update( &main_camera, global.time.delta );
@@ -135,8 +119,10 @@ int main(int argc, char *argv[])
 	renderBegin();//rendering block begin
 	renderECS();
 	
+
 #ifdef DEBUG_MODE
 	drawAllAABB(toggleHitBoxVisual);
+	showDebugStats(2);
 #endif
 	
 	renderEnd();  //rendering block end

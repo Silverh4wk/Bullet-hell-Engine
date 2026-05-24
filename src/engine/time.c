@@ -4,7 +4,6 @@
 #include "time.h"
 #include "global.h"
 
-
 void
 timeInit(uint32 frame_rate) {
     global.time.frame_rate = frame_rate;
@@ -14,20 +13,12 @@ timeInit(uint32 frame_rate) {
 //to be called at the beggining of each frame
 void
 timeUpdate(void) {
+    char buffer[1024];
     global.time.now = (real32)SDL_GetTicks();
     global.time.delta = (global.time.now - global.time.last) / 1000.0f;
     global.time.last = global.time.now;
     ++global.time.frame_count;
 
-    // Check if one second has passed since last FPS measurement
-    if(global.time.now - global.time.frame_last >= 1000.f)
-    {
-	global.time.frame_rate = global.time.frame_count;
-	printf("\n FPS: %d", global.time.frame_count);
-	global.time.frame_count = 0;
-	global.time.frame_last = global.time.now;
-    }
-    
 }
 
 

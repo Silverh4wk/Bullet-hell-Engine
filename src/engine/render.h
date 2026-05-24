@@ -8,6 +8,8 @@
 #include "../engine/physics.h"
 #include "render/render_internal.h"
 #include <SDL3/SDL.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 #define DEFAULT_WIDTH 1280
 #define DEFAULT_HEIGHT 720
@@ -55,5 +57,11 @@ drawAllAABB(int toggle);
 
 void
 renderShutdown(void);
+
+void
+renderTextInit();
+
+void
+renderText(char *text, real32 x, real32 y, vec4* color);
 
 #endif

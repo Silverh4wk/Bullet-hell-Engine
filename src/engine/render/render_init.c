@@ -10,11 +10,15 @@
 
 #include "../render.h"
 #include "render_internal.h"
+#include "../../Util/colors.h"
+// freetype data
+FT_Library library;
+FT_Face face;
+char debug_info0 [512];
 
 
 SDL_Window *
 renderInitWindow(int width, int height) {
-
     int i ;
     float x, y;
 
@@ -39,7 +43,10 @@ renderInitWindow(int width, int height) {
     printf("Vendor:   %s\n", glGetString(GL_VENDOR))  ; 
     printf("Renderer: %s\n", glGetString(GL_RENDERER)); 
     printf("Version:  %s\n", glGetString(GL_VERSION)) ; 
-    
+ 
+    sprintf(debug_info0,
+	    "Vendor: %s | Renderer: %s | Version: %s",
+	    glGetString(GL_VENDOR), glGetString(GL_RENDERER), glGetString(GL_VERSION));
     return window;
 };
 
@@ -237,16 +244,118 @@ void renderInitColorTexture(uint32 *texture)
 
 //reminder to do something abt this
 void renderInitShaders(struct RenderStateInternal *state){
+
     state->shader_default = renderShaderCreate("I:/FYP/src/shaders/default.vert",
 					       "I:/FYP/src/shaders/default.frag");
+    
+    state->text_shader = renderShaderCreate("I:/FYP/src/shaders/text.vert",
+					    "I:/FYP/src/shaders/text.frag");
+    
     mat4x4_ortho(state->projection, 0, global.render.width, 0, global.render.height,-2, 2);
+
+//default shaders
     glUseProgram(state->shader_default);
-    glUniformMatrix4fv(
-	glGetUniformLocation(state->shader_default,"projection"),
-	1,
-	GL_FALSE,
-	&state->projection[0][0]
-	);
+    glUniformMatrix4fv(glGetUniformLocation(state->shader_default,"projection"),1,
+		       GL_FALSE,&state->projection[0][0]);
     //get the view uniform location
       state->view_uniform = glGetUniformLocation(state->shader_default, "view");
+
+      //text shaders
+      glUniformMatrix4fv(glGetUniformLocation(state->text_shader,"projection"),1,
+			     GL_FALSE,&state->projection[0][0]);
+
+	  glUniform1i(    glGetUniformLocation(state->text_shader,"texture_ID"),0);
+
 };
+
+
+void
+renderInitText(struct RenderStateInternal *state)
+{
+    int error;
+    
+    error = FT_Init_FreeType(&library);
+    if (error)
+        ERROR_EXIT("Freetype init failed\n");
+
+    error = FT_New_Face(library,
+                        "i:/FYP/src/assets/fonts/arial.ttf",
+                        0, &face);
+    if (error)
+        ERROR_EXIT("Failed to load font\n");
+
+    FT_Set_Pixel_Sizes(face, 18, 24);
+    FT_Select_Charmap(face, FT_ENCODING_UNICODE);
+
+    glGenTextures(1, &state->atlas_tex);
+    glBindTexture(GL_TEXTURE_2D, state->atlas_tex);
+    // single-channel glyph data may have row alignment != 4; ensure proper unpack alignment
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, ATLAS_WIDTH, ATLAS_HEIGHT,
+                 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
+   
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+   
+    int x = 0, y = 0;
+int row_height = 0;
+
+for (int c = FIRST_CHAR; c < LAST_CHAR; c++) {
+    if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
+        fprintf(stderr, "Warning: failed to load char %d\n", c);
+        continue;
+    }
+    FT_GlyphSlot g = face->glyph;
+    int w = g->bitmap.width;
+    int h = g->bitmap.rows;
+
+    // If this glyph doesn't fit on current row, move to next row
+    if (x + w > ATLAS_WIDTH) {
+        x = 0;
+        y += row_height;
+        row_height = 0;
+        // Check vertical overflow
+        if (y + h > ATLAS_HEIGHT) {
+            fprintf(stderr, "Fatal: Atlas overflow for char %d (y=%d, h=%d)\n", c, y, h);
+            break;
+        }
+    }
+
+    // Upload glyph bitmap to atlas
+    glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_RED, GL_UNSIGNED_BYTE, g->bitmap.buffer);
+
+    int idx = c - FIRST_CHAR;
+    state->glyphs[idx].ax = g->advance.x >> 6;
+    state->glyphs[idx].ay = g->advance.y >> 6;
+    state->glyphs[idx].bw = (float)w;
+    state->glyphs[idx].bh = (float)h;
+    state->glyphs[idx].bl = (float)g->bitmap_left;
+    state->glyphs[idx].bt = (float)g->bitmap_top;
+    state->glyphs[idx].tx0 = (float)x / ATLAS_WIDTH;
+    state->glyphs[idx].ty0 = (float)y / ATLAS_HEIGHT;
+    state->glyphs[idx].tx1 = (float)(x + w) / ATLAS_WIDTH;
+    state->glyphs[idx].ty1 = (float)(y + h) / ATLAS_HEIGHT;
+
+    x += w;
+    if (h > row_height) row_height = h;
+}
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+
+	glGenBuffers(1, &state->text_vbo);
+	glGenVertexArrays(1, &state->text_vao);
+
+	glBindVertexArray(state->text_vao);
+	glBindBuffer(GL_ARRAY_BUFFER, state->text_vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(real32) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(real32), 0);
+	glBindVertexArray(0);
+
+
+	state->atlas_built = 1;
+}

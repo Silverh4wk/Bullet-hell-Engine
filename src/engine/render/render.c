@@ -6,6 +6,9 @@
 #include "../ecs_internal.h"
 #include "../camera.h"
 #include "../global.h"
+#include "../font_rendering.h"
+#include "freetype/freetype.h"
+
 
 
 #define MAX_BATCHES 64
@@ -152,6 +155,7 @@ renderInit(void)
     renderInitCircle(&state);
     renderInitShaders(&state);
     renderInitColorTexture(&state.texture_color);
+    renderInitText(&state);
 };
 
 
@@ -395,4 +399,97 @@ void camera_apply(const Camera* cam) {
     mat4x4_mul(combined, state.projection, *camera_get_view_matrix((Camera*)cam));
     glUseProgram(state.shader_default);
     glUniformMatrix4fv(glGetUniformLocation(state.shader_default, "projection"), 1, GL_FALSE, &combined[0][0]);
+}
+
+//https://gedge.ca/blog/2013-12-08-opengl-text-rendering-with-freetype/
+void
+renderText(char *text, real32 x, real32 y, vec4* color) {
+    real32 text_scale_x = 2.0f / global.render.width;
+    real32 text_scale_y = 2.0f / global.render.height;
+    
+    glUseProgram(state.text_shader);
+
+    static mat4x4 identity;
+    static int identity_init = 0;
+    if (!identity_init) {
+        mat4x4_identity(identity);
+        identity_init = 1;
+    }
+    glUniformMatrix4fv(glGetUniformLocation(state.text_shader, "projection"),
+                       1, GL_FALSE, &identity[0][0]);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, state.atlas_tex);
+    glUniform1i(glGetUniformLocation(state.text_shader, "texture_ID"), 0);
+
+       GLint colorLoc = glGetUniformLocation(state.text_shader, "color");
+       if ( color != NULL) {
+	   glUniform4fv(colorLoc, 1, *color);
+       } else {
+	   // Default white if no color provided
+	   vec4 white = {1.0f, 1.0f, 1.0f, 1.0f};
+	   glUniform4fv(colorLoc, 1, white);
+    }
+    
+    glBindVertexArray(state.text_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, state.text_vbo);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    #define MAX_VERTICES 4096
+    float vertices[MAX_VERTICES * 4];  // x, y, s, t per vertex
+    int vert_count = 0;
+
+    float pen_x = x;
+    float pen_y = y;
+
+    while (*text && vert_count + 6 <= MAX_VERTICES) {
+        int c = *text;
+        if (c < FIRST_CHAR || c >= LAST_CHAR) {
+            text++;
+            continue;
+        }
+
+        GlyphInfo *g = &state.glyphs[c - FIRST_CHAR];
+        if (g->bw == 0 && g->bh == 0) {
+            pen_x += g->ax;
+            pen_y += g->ay;
+            text++;
+            continue;
+        }
+
+        // Convert pixel coordinates to NDC 
+        float vx = (pen_x + g->bl) * text_scale_x - 1.0f;
+        float vy = 1.0f - (pen_y - g->bt) * text_scale_y; 
+        float w = g->bw * text_scale_x;
+        float h = g->bh * text_scale_y;
+
+        // Add 6 vertices (two triangles)
+        float *v = &vertices[vert_count * 4];
+	
+        v[0]  = vx;      v[1]  = vy;      v[2]  = g->tx0; v[3]  = g->ty0;
+        v[4]  = vx;      v[5]  = vy - h;  v[6]  = g->tx0; v[7]  = g->ty1;
+        v[8]  = vx + w;  v[9]  = vy;      v[10] = g->tx1; v[11] = g->ty0;
+
+        v[12] = vx + w;  v[13] = vy;      v[14] = g->tx1; v[15] = g->ty0;
+        v[16] = vx;      v[17] = vy - h;  v[18] = g->tx0; v[19] = g->ty1;
+        v[20] = vx + w;  v[21] = vy - h;  v[22] = g->tx1; v[23] = g->ty1;
+
+        vert_count += 6;
+
+        pen_x += g->ax;
+        pen_y += g->ay;
+        text++;
+    }
+    
+    if (vert_count > 0) {
+        glBufferData(GL_ARRAY_BUFFER, vert_count * 4 * sizeof(float),
+                     vertices, GL_DYNAMIC_DRAW);
+        glDrawArrays(GL_TRIANGLES, 0, vert_count);
+    }
+
+    glDisable(GL_BLEND);
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }

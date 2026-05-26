@@ -98,10 +98,31 @@ int entityDestroy( Entity entity ) {
     return 0;
 }
 
+void
+entityMove(Entity entity, vec2* pos)
+{
+    shapeMove(g_shapes[entity].shape, (*pos)[0], (*pos)[1]);
+    entitySetTransform(entity, pos,NULL, NULL);
+}
+
 struct Transform*
 entityGetTransform( Entity entity ) {
     if (entity == 0 || entity >= MAX_ENTITIES) return NULL;
     return &g_transforms[entity];
+}
+
+static inline struct Body
+*entityGetBody(Entity entity) {
+    if (entity == 0 || entity >= MAX_ENTITIES) return NULL;
+
+    struct Body * body = NULL;
+
+    int32 bodyIdx = g_body_indices[entity];
+    if ( bodyIdx != -1 )
+    {
+	struct Body * body = physicsGetBody( bodyIdx );
+    }
+    return body; // add proper logging here
 }
 
 
@@ -131,6 +152,7 @@ void
 entitySetTransform(Entity entity, vec2* pos, vec2* size,real32* angle) {
     // a temp pointer to get the entity transform data
     struct Transform* transform = entityGetTransform(entity);
+
     if (!transform) return;
 
     //override that data with 
@@ -138,12 +160,15 @@ entitySetTransform(Entity entity, vec2* pos, vec2* size,real32* angle) {
     {
 	transform->position[0] = ( *pos )[0];
 	transform->position[1] = ( *pos )[1];
+	// if we have a body, align its coords with the entity
+
     }
 
      if( size != NULL )
     {
 	transform->size[0] = ( *size )[0];
 	transform->size[1] = ( *size )[1];
+	// same for size (not sure if this actually work)
     }
      
     if ( angle!= NULL )
@@ -160,13 +185,10 @@ entityAddPhysics( Entity entity )
     
     //make sure it got a physical body attached to it
     ensurePhysicsBody( entity );
-
-    int32 bodyIdx = g_body_indices[ entity ];
-    struct Body* body = NULL;
     //get the body then copy the transform attribs
-    if ( bodyIdx != -1 )
+    struct Body* body = entityGetBody(entity);
+    if (body)
     {
-	body = physicsGetBody( bodyIdx );
 	// i really do not like this but the physics body follow the coordinates of the body
 	body->aabb.coords[ 0 ] = transform->position[ 0 ];
 	body->aabb.coords[ 1 ] = transform->position[ 1 ];
@@ -235,11 +257,7 @@ collisionSetHitboxCircle( Entity entity, int radius ) {
 void
 collisionGroupAddToGrp( Entity entity, char *grp )
 {
-    if ( entity == 0 || entity >= MAX_ENTITIES ) return;
-    int32 bodyIdx = g_body_indices[entity];
-    if ( bodyIdx == -1 ) return;
-
-    struct Body * body = physicsGetBody( bodyIdx );
+    struct Body * body = entityGetBody( entity );
     body->group = grp;
 }
 

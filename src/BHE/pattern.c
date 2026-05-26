@@ -5,9 +5,10 @@
 #include "../engine/array_list.h"
 #include "../engine/global.h"
 
-#include <math.h>
+#include "../equations/equations.h"
 #include <stdlib.h>
 #include <string.h>
+
 //( TODO ) wrap all the logging stuff inside one function
 
 //  constants & pools
@@ -42,8 +43,6 @@ executePattern( Entity e, struct Pattern *pat, real32 dt,
 static void spawnbullet( const struct PatternCommand *cmd, int bullet_idx,
 			 Entity spawner, uint32 bullet_type_id, vec2 spawnPos,
 			 struct PatternEntityState *state );
-static real32
-getTimingFactor(  uint32 func, real32 t  );
 
 static bool advanceFireCommand( uint32 count, real32 base_delay,
 				uint32 timing_func,
@@ -373,88 +372,6 @@ PatternSetTimingFunction(  uint32 pattern_id, int function_type  ) {
     pattern->timing_function = (  uint32  )function_type;
 
     
-}
-
-// timing functions
-// https://easings.net/
-// https://blog.febucci.com/2018/08/easing-functions/
-
-static real32
-flip(real32 t) {
-    return 1 - t;
-}
-
-static real32
-timingEaseLinear(  real32 t  ) {
-    return t;   
-}
-
-
-//starts slow, then accelerates.
-static real32 timingEaseIn( real32 t ) {
-    return t * t;
-}
-
-
-static real32
-timingEaseInSine( real32 t ) {
-    return flip(cosf( (t* Pi32 )  / 2 ) );
-}
-
-// fast start, slow end
-static real32
-timingEaseOut(  real32 t  ) {
-    return flip( ( flip( t ) * flip( t ) ) );   //flip(Square(flip(t)));
-}
-
-
-static real32
-timingEaseOutSine(  real32 t  ) {
-    return sinf((t * Pi32 ) / 2);
-}
-
-//start accelerating (EaseIn) and stop decelerating (EaseOut),
-static real32
-timingEaseInOut(  real32 t  ) {
-    return lerp(timingEaseIn( t ), timingEaseOut( t ), t); 
-}
-
-static real32
-timingEaseInOutBack( real32 t ) {
-    real32 c1 = 1.170158;
-    real32 c2 = c1 * 1.525;
-
-    return t < 0.5f ? ( powf( 2 * t, 2 )  * ( ( c2 + 1 ) * 2 * t - c2)) / 2: 
-	              ( powf( 2 * t - 2, 2 ) * ( ( c2 + 1 ) * (t * 2 - 2) + c2) + 2) / 2;
-}
-
-//"mirrored" easing
-//we use easein until we get to 50% and then flip and do the same
-static real32
-timingSpike( real32 t ) {
-    if ( t >= 0.5f)
-	return timingEaseIn( t / 0.5f );
-
-    return timingEaseIn(flip( t ) / 0.5f );
-}
-
-
-static real32
-getTimingFactor(  uint32 func, real32 t  ) {
-    switch ( func ) {
-
-    case TIMING_LINEAR:             return timingEaseLinear( t );
-    case TIMING_EASE_IN:            return timingEaseIn( t );
-    case TIMING_EASE_IN_SINE:       return timingEaseInSine( t );
-    case TIMING_EASE_OUT:           return timingEaseOut( t );
-    case TIMING_EASE_OUT_SINE:      return timingEaseOutSine( t );
-    case TIMING_EASE_IN_OUT:        return timingEaseInOut( t );
-    case TIMING_EASE_IN_OUT_BACK:   return timingEaseInOutBack( t );
-    case TIMING_SPIKE:              return timingSpike( t );
-
-	// just return back the progress by default
-    default: return t;
-    }
 }
 
 ////////////////////////////////////////////

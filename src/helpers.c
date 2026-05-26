@@ -4,20 +4,6 @@
 #include "objects/shapes.h"
 
 
-
-
-//prolly move this
-real32
-lerp(real32 start_angle, real32 end_angle, real32 t)
-{
-    return start_angle + t* ( end_angle - start_angle );
-}
-
-real32
-degreeToRadians(real32 angle)
-{
-    return angle * ( Pi32 / 180.0f );
-}
 // just  quick functions to set vec2/3/4 variables
 // not really necessary just something i did when i was bored and lazy (apparently, i never thought of using memcpy)
 void

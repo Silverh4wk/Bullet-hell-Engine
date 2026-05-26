@@ -10,6 +10,7 @@ set "ecs=%PROJECT_ROOT%\src\engine\ecs\*.c"
 set "times=%PROJECT_ROOT%\src\engine\time.c"
 set "physics=%PROJECT_ROOT%\src\engine\physics\*.c"
 set "dataStructs=%PROJECT_ROOT%\src\engine\dataStructs\*.c"
+set "MathEquations=%PROJECT_ROOT%\src\equations\*.c"
 set "debug=%PROJECT_ROOT%\src\engine\Profiling\*.c "
 set "files=%PROJECT_ROOT%\src\main.c %PROJECT_ROOT%\src\glad.c %PROJECT_ROOT%\src\helpers.c %PROJECT_ROOT%\src\engine\global.c"
 
@@ -21,7 +22,7 @@ if not exist "%BUILD_DIR%" mkdir "%BUILD_DIR%"
 pushd "%BUILD_DIR%"
 
 cl  /Zi /MDd  /I  "%PROJECT_ROOT%\include" ^
-   /DDEBUG_MODE %files% %render% %io% %config% %input% %dataStructs% %physics% %times% %objects% %ecs% %API% %debug% ^
+   /DDEBUG_MODE %files% %render% %io% %config% %input% %dataStructs% %MathEquations% %physics% %times% %objects% %ecs% %API% %debug% ^
     /link %libs% /OUT:BHE.exe
 
 popd

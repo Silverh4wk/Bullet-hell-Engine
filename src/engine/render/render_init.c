@@ -3,7 +3,6 @@
 #include <glad/glad.h>
 #include <SDL3/SDL.h>
 #include <stdlib.h>
-#include <math.h>
 
 #include "../global.h"
 #include "../../helpers.h"
@@ -11,6 +10,10 @@
 #include "../render.h"
 #include "render_internal.h"
 #include "../../Util/colors.h"
+
+#define Pi32 3.14159265359f
+
+
 // freetype data
 FT_Library library;
 FT_Face face;

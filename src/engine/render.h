@@ -59,7 +59,7 @@ void
 renderShutdown(void);
 
 void
-renderTextInit();
+renderInitText(struct RenderStateInternal *state);
 
 void
 renderText(char *text, real32 x, real32 y, vec4* color);

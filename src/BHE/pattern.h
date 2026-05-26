@@ -57,19 +57,6 @@ struct PatternCommand {
     uint32 intParam[2];         // bullet_type_id, child_pattern_id, and so on.
 };
 
-typedef enum {
-  TIMING_LINEAR,
-  TIMING_EASE_IN,
-  TIMING_EASE_IN_SINE,
-  TIMING_EASE_OUT,
-  TIMING_EASE_OUT_SINE,
-  TIMING_EASE_IN_OUT,
-  TIMING_EASE_IN_OUT_BACK,
-  TIMING_SPIKE,
-
-  //
-} PatternTiming;
-
 // pttern Definition
 struct Pattern {
     struct Array_List *commands;          // list to store PatternCommand(s)

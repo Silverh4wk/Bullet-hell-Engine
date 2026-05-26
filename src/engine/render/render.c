@@ -6,7 +6,6 @@
 #include "../ecs_internal.h"
 #include "../camera.h"
 #include "../global.h"
-#include "../font_rendering.h"
 #include "freetype/freetype.h"
 
 

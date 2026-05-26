@@ -20,6 +20,9 @@ entityDestroy( Entity entity );
 void
 entityBuild(Entity entity, ShapeType shape_t, int t_physics);
 
+void
+entityMove( Entity entity, vec2* pos);
+
 // return the entity transform data
 struct Transform*
 entityGetTransform( Entity entity );

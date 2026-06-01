@@ -191,10 +191,6 @@ void bulletSystemUpdate( real32 dt ) {
 	if ( body->lifetime <= 0 )
 	{
 	    body->active = false;
-	    // Hide its shape
-	    if ( body->sptr ) {
-		body->sptr->pos[0] = body->sptr->pos[1] = 50;//-10000; // move pos to offscreen
-	    }
 	    bulletFreeListPush( e );
 	}
     }

@@ -56,7 +56,6 @@ shapeQuadCreate(vec2 pos, vec2 size , vec4* color, Type t,bool t_physics)
     // Fill quad vars
     setQuad(quad, pos, size, color);
     quad->data.quad.rotation_angle = 0.0f;
-    quad->texture = 0;
     if (!quad){
 	r.result = SHAPE_ERR_INTERNAL; 
 	ERROR_RETURN(r, "Failed to create shape, SHAPE_ERROR: SHAPE_ERR_INTERNAL %d \n", r.result)}
@@ -118,6 +117,7 @@ shapeCircleCreate(vec2 pos, real32 radius, vec4* color, Type t,bool t_physics)
     circle->physics_enabled = t_physics;
     circle->type = t;
     circle->texture = 0;
+    circle->data.circle.radius = radius;
     
     // Fill quad vars
     setCircle(circle,pos, radius, color);
@@ -150,22 +150,27 @@ shapeAddPhysics(struct Shape *shape)
 
     if(shape->shape_type == SHAPE_QUAD)
     {
-	physicsBodyCreate(shape,shape->pos,shape->data.quad.size,shape->type);
+	shape->body_index = physicsBodyCreate(shape,shape->pos,shape->data.quad.size,shape->type);
     }
     else if (shape->shape_type == SHAPE_CIRCLE)
     {
 	vec2 radius = {shape->data.circle.radius,shape->data.circle.radius};
-	physicsBodyCreate(shape,shape->pos,radius,shape->type);
+	shape->body_index = physicsBodyCreate(shape,shape->pos,radius,shape->type);
     }
 }
 
 
-void shapeMove(struct Shape* quad, real32 posx, real32 posy)
+void shapeMove(struct Shape* shape, real32 posx, real32 posy)
 {
-    setVec2(&quad->pos, posx, posy);
+    setVec2(&shape->pos, posx, posy);
 
-    if (quad->physics_enabled == true)
-	setVec2(&quad->body->aabb.coords, posx, posy);
+    if (shape->physics_enabled == true)
+    {
+	struct Body* body = physicsGetBody(shape->body_index);
+	if (body) {
+	    setVec2(&body->aabb.coords, posx, posy);
+	}
+    }
     
 }
 
@@ -181,13 +186,17 @@ void QuadSetColor(struct Shape *quad, real32 c1, real32 c2, real32 c3, real32 c4
 void QuadDelete(struct Shape* quad)
 {
     
-     if (!quad) {
-	 return ;}
+     if (!quad)
+     {
+	 return ;
+     }
 
-    if (quad->body)
+     struct Body *quad_body = physicsGetBody(quad->body_index);
+     
+     if (quad_body)
     {
-        physicsBodyDestroyByPtr(quad->body);
-        quad->body = NULL;
+        physicsBodyDestroyByPtr(quad_body);
+        quad_body = NULL;
     }
 
     return ;

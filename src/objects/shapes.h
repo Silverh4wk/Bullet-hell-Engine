@@ -15,7 +15,7 @@ typedef enum {
 } ShapeType;
     
 struct Shape {
-    struct Body* body;
+    size_t body_index;
     ShapeType shape_type;
     Type type;
     vec2 pos;

@@ -17,6 +17,7 @@ typedef enum {
 
 #define Pi32 3.14159265359f
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
+#define MIN(a,b) (((a) < (b)) ? (a) : (b))
 
 int32  pseudoRand(int32 n);
 

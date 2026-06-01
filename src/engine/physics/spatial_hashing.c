@@ -2,33 +2,20 @@
 #include <linmath.h>
 #include "stdlib.h"
 #include "../physics.h"
+#include "../../equations/equations.h"
 
 
 //create and return spatial hash table
-struct SpatialHash *spatialHashCreate(int spacing, int maximum_number_of_objects)
+struct SpatialHash *spatialHashCreate(int spacing, int number_of_objects)
 {
     struct SpatialHash* sh = (struct SpatialHash*) malloc(sizeof(struct SpatialHash));
 
     sh->spacing      = spacing;
-    sh->table_size   = 2 *  maximum_number_of_objects;
+    sh->table_size   = 2 * number_of_objects;
 
     sh->cell_start   = arrayListCreate(sizeof(int32), sh->table_size+1);
-    for (int i = 0; i <= sh->table_size; i++) {
-	int zero = 0;
-	arrayListAppend(sh->cell_start, &zero);
-    }
-
-    sh->cell_entries = arrayListCreate(sizeof(int32),  maximum_number_of_objects);
-    for (int i = 0; i < maximum_number_of_objects; i++) {
-	int zero = 0;
-	arrayListAppend(sh->cell_entries, &zero);
-    }
-
-    sh->query_Ids    = arrayListCreate(sizeof(int32),  maximum_number_of_objects);
-    for (int i = 0; i < maximum_number_of_objects; i++) {
-	int zero = 0;
-	arrayListAppend(sh->query_Ids, &zero);
-    }
+    sh->cell_entries = arrayListCreate(sizeof(int32),  number_of_objects);
+    sh->query_Ids    = arrayListCreate(sizeof(int32),  number_of_objects);
 
     sh->query_size = 0;
 
@@ -51,98 +38,77 @@ hashCoords(int xi,int yi, int zi,  int table_size) {
     return abs(h) % table_size; 
 }
 
+//computes the coordinates of a cell that contains the object with given coordiantes 
 static inline int
 worldToCell(real32 coordinate, int spacing)
 {
     return (int)floorf(coordinate / spacing);
 };
 
-//im not smart enough for this, had ai help me 
+
+static inline int
+hashPos(int cx, int cy, int cz, int table_size, int spacing) {
+    return hashCoords(
+	worldToCell(cx,spacing),
+	worldToCell(cy,spacing),
+	worldToCell(cz,spacing),
+	table_size);
+}    
+
 void                                                                //get from the global body list
 spatialHashBuildAABB(struct SpatialHash* sh) {
 
-    int num_bodies = physicsGetBodyCount();
+    int num_bodies = MIN(physicsGetBodyCount(), sh->cell_entries->len);
     int max_objects = sh->cell_entries->len;
     if (num_bodies > max_objects) num_bodies = max_objects;
     
     //determine cell sizes
+    
+    //fill with zeroes
+
     for (int i = 0; i <= sh->table_size; i++) {
+	if((int*)arrayListGet(sh->cell_start, i) == NULL)
+	{
+	    arrayListAppend(sh->cell_start,&(int){0});
+	    continue;
+	};
 	*(int*)arrayListGet(sh->cell_start, i) = 0;
+    }
+
+    for (int i = 0; i <= sh->table_size; i++) {
+	
+	if((int*)arrayListGet(sh->cell_entries, i) == NULL)
+	{
+	    arrayListAppend(sh->cell_entries,&(int){0});
+	    continue;
+	};
+	
+	*(int*)arrayListGet(sh->cell_entries, i) = 0;
     }
     
     for (int i = 0; i < num_bodies; i++) {
         struct Body* b = physicsGetBody(i);
-	
-	real32 minX = b->aabb.coords[0] - b->aabb.dims[0];
-	real32 maxX = b->aabb.coords[0] + b->aabb.dims[0];
-	real32 minY = b->aabb.coords[1] - b->aabb.dims[1];
-	real32 maxY = b->aabb.coords[1] + b->aabb.dims[1];
-	
-	int cx0 = worldToCell(minX, sh->spacing);
-       int cx1 = worldToCell(maxX, sh->spacing);
-       int cy0 = worldToCell(minY, sh->spacing);
-       int cy1 = worldToCell(maxY, sh->spacing);
-
-	// increment each bucket for each cell
-       for (int cx = cx0; cx <= cx1; cx++) {
-	   for (int cy = cy0; cy <= cy1; cy++) {
-	       int h = hashCoords(cx, cy, 0, sh->table_size);
-	       (*(int*)arrayListGet(sh->cell_start, h))++;
-	    }
-	}
+	int h = hashPos(b->aabb.coords[0],b->aabb.coords[1],1, sh->table_size,sh->spacing);
+	*(int*)arrayListGet(sh->cell_start,h) +=1 ;
     }
     
     // determine cell starts
     int start = 0;
     for (int i = 0; i < sh->table_size; i++) {
-        int* cs = (int*)arrayListGet(sh->cell_start, i);
-	start += *cs;
-	*cs = start;
+        start = start + *(int*)arrayListGet(sh->cell_start, i);
+	*(int*)arrayListGet(sh->cell_start,i) = start;
     }
     
     *(int*)arrayListGet(sh->cell_start, sh->table_size) = start;   // guard
 
-    
-    int total_entries = start;
-    if(total_entries > (int)sh->cell_entries->len)
+    // fill in object ids
+
+    for(int i =0; i < num_bodies; i++)
     {
-	int* new_entries = realloc(sh->cell_entries->items, total_entries*sizeof(int));
-
-	if(!new_entries) return;
-	sh->cell_entries->items = new_entries;
-	sh->cell_entries->capacity = total_entries;
-	sh->cell_entries->len = total_entries;
-
-	int* new_query = realloc(sh->query_Ids->items, total_entries*sizeof(int));
-	if(!new_query) return;
-	sh->query_Ids->items =new_query;
-	sh->query_Ids->capacity = total_entries;
-	sh->query_Ids->len = total_entries;
-    }
-    //  fill in objectids
-
-    for (int i = 0; i < num_bodies; i++) {
-        struct Body* b = physicsGetBody(i);
-
-	real32 minX = b->aabb.coords[0] - b->aabb.dims[0];
-	real32 maxX = b->aabb.coords[0] + b->aabb.dims[0];
-	real32 minY = b->aabb.coords[1] - b->aabb.dims[1];
-	real32 maxY = b->aabb.coords[1] + b->aabb.dims[1];
-
-        int cx0 = worldToCell(minX, sh->spacing);
-        int cx1 = worldToCell(maxX, sh->spacing);
-        int cy0 = worldToCell(minY, sh->spacing);
-        int cy1 = worldToCell(maxY, sh->spacing);
-	
-	for (int cx = cx0; cx <= cx1; cx++) {
-            for (int cy = cy0; cy <= cy1; cy++) {
-		int h = hashCoords(cx, cy, 0, sh->table_size);
-		int* start_ptr = (int*)arrayListGet(sh->cell_start, h);
-		(*start_ptr)--;
-		int idx = *start_ptr;
-		*(int*)arrayListGet(sh->cell_entries,idx) = i; 
-            }
-        }
+	struct Body* b = physicsGetBody(i);
+	int h = hashPos(b->aabb.coords[0],b->aabb.coords[1],1, sh->table_size,sh->spacing);
+	*(int*)arrayListGet(sh->cell_start,h) -=1 ;
+	*(int*)arrayListGet(sh->cell_entries,h) = i;
     }
 }
 
@@ -154,38 +120,30 @@ spatialHashBuildAABB(struct SpatialHash* sh) {
 
 
 void
-spatialHashQuery(struct SpatialHash * sh,struct Body* b, int object_id){
-
-    int max_objects = sh->cell_entries->len;
-	
-    real32 minX = b->aabb.coords[0] - b->aabb.dims[0];
-    real32 maxX = b->aabb.coords[0] + b->aabb.dims[0];
-    real32 minY = b->aabb.coords[1] - b->aabb.dims[1];
-    real32 maxY = b->aabb.coords[1] + b->aabb.dims[1];
-
-    int cx0 = worldToCell(minX, sh->spacing);
-    int cx1 = worldToCell(maxX, sh->spacing);
-    int cy0 = worldToCell(minY, sh->spacing);
-    int cy1 = worldToCell(maxY, sh->spacing);
+spatialHashQuery(struct SpatialHash *sh, struct Body *body,int object_id, int max_dist)
+{
+    int x0 = worldToCell(body->aabb.coords[0] - max_dist, sh->spacing);
+    int y0 = worldToCell(body->aabb.coords[1] - max_dist, sh->spacing);
+    
+    int x1 = worldToCell(body->aabb.coords[0] + max_dist, sh->spacing);
+    int y1 = worldToCell(body->aabb.coords[1] + max_dist, sh->spacing);
 
     sh->query_size = 0;
+    
+    for (int xi = x0; xi < x1; xi++)
+    {
+	for(int yi = y0; yi < y1; yi++)
+	{
+	    int h = hashPos(xi,yi,1, sh->table_size,sh->spacing);
+	    int start = *(int*)arrayListGet(sh->cell_start,h); 
+	    int end   = *(int*)arrayListGet(sh->cell_start,h+1);
 
-    for (int cx = cx0; cx <= cx1; cx++) {
-        for (int cy = cy0; cy <= cy1; cy++) {
-	    
-            int h = hashCoords(cx, cy, 0, sh->table_size);
-            int start = *(int*)arrayListGet(sh->cell_start, h);
-            int end =   *(int*)arrayListGet(sh->cell_start,h + 1);
-
-	    for (int i = start; i < end; i++) {
-		if(sh->query_size >= (int)sh->query_Ids->len)
-		    break;
-		int* qs = (int*)arrayListGet(sh->query_Ids, sh->query_size);
-		*qs = *(int*)arrayListGet(sh->cell_entries, i);
-		sh->query_size++;
-		
-            }
-        }
+	    for (int i = start; i < end ; i++)
+	    {
+		*(int*)arrayListGet(sh->query_Ids,sh->query_size) = *(int*)arrayListGet(sh->cell_entries,i);
+		sh->query_size ++;
+	    }
+	}
     }
 }
 
@@ -224,7 +182,7 @@ spatialHashQuery(struct SpatialHash * sh,struct Body* b, int object_id){
 /*     } */
 /* } */
 
-/* void spatialHashQuery(struct SpatialHash* sh,vec2 pos, real32 radius,struct Array_List* outResults) */
+/* void spatialHashQuer(struct SpatialHash* sh,vec2 pos, real32 radius,struct Array_List* outResults) */
 /* { */
 /*     int minX = worldToCell(pos[0] - radius); */
 /*     int maxX = worldToCell(pos[0] + radius); */

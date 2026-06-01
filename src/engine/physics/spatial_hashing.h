@@ -29,9 +29,8 @@ spatialHashDestroy(struct SpatialHash* sh);
 void
 spatialHashBuildAABB(struct SpatialHash *sh);
 
-
 void
-spatialHashQuery(struct SpatialHash * sh,struct Body* b, int object_id);
+spatialHashQuery(struct SpatialHash *sh, struct Body *body,int object_id, int max_dist);
 
 /* void */
 /* makeCellKey(int x, int y, char *out, size_t outSize); */
@@ -43,6 +42,6 @@ spatialHashQuery(struct SpatialHash * sh,struct Body* b, int object_id);
 /* spatialHashInsert(struct SpatialHash* sh, struct Body* body); */
 
 /* void */
-/* spatialHashQuery(struct SpatialHash* sh,vec2 pos, float radius,struct Array_List* outResults); */
+/* spatialHashQuer(struct SpatialHash* sh,vec2 pos, float radius,struct Array_List* outResults); */
 
 #endif

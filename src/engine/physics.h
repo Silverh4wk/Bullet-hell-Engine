@@ -31,7 +31,6 @@ struct Body
     int  active;
     real32 lifetime;
     Type type;
-    struct Shape* sptr; //points back to the shape that its holdoing i guess (temp fix)
     Entity entity;
     char* group ;
     

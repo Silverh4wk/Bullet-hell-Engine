@@ -27,30 +27,36 @@ void updateBodiesPosition(void)
 {
     struct Body *body ;
     
-    for(uint32 i =0 ;i< state.body_list->len;++i)
+    for(uint32 i =0 ;i < state.body_list->len;++i)
     {
-	
 	body = (struct Body*) arrayListGet(state.body_list, i);
+	
+        if (body->entity != 0)
+	{
 
+	    struct Transform* t = entityGetTransform(body->entity);
+	    struct Shape* shape = g_shapes[body->entity].shape;
+
+	    if (shape)
+	    {
+		shape->pos[0] = body->aabb.coords[0];
+		shape->pos[1] = body->aabb.coords[1];
+	    }
+
+	    if (t)
+	    {
+                t->position[0] = body->aabb.coords[0];
+                t->position[1] = body->aabb.coords[1];
+            }
+        }
+	
         if (body->active == false) continue;
 	body->velocity[0] += body->acceleration[0] * global.time.delta;
         body->velocity[1] += body->acceleration[1] * global.time.delta;
 	
 	 body->aabb.coords[0] += body->velocity[0] * global.time.delta;
 	 body->aabb.coords[1] += body->velocity[1] * global.time.delta;
-	 //update the visual shape pos accordingly
-        if (body->sptr) {
-            body->sptr->pos[0] = body->aabb.coords[0];
-            body->sptr->pos[1] = body->aabb.coords[1];
-        }
-	
-        if (body->entity != 0) {
-            struct Transform* t = entityGetTransform(body->entity);
-            if (t) {
-                t->position[0] = body->aabb.coords[0];
-                t->position[1] = body->aabb.coords[1];
-            }
-        }
+	 
     }
 }
 
@@ -75,7 +81,6 @@ physicsBodyCreate(struct Shape* sptr,vec2 pos, vec2 size,Type t) {
 	.velocity = {0,0},
 	.onCollision = NULL,
 	.type = t,
-	.sptr = sptr,
 	.entity = 0,
 	.active = true,
 	.lifetime = 0,
@@ -83,12 +88,14 @@ physicsBodyCreate(struct Shape* sptr,vec2 pos, vec2 size,Type t) {
 // if i ever think of adding gravity but who knows (this thought was stupid of me, im a changed man now)	
 //.gravity  = 9.80665f,
     };
-    
+
     // attempt to append the newly created body to the global list of bodies to store its reference
     // else exit
     if(arrayListAppend(state.body_list,&body) == (size_t)-1)
-	ERROR_EXIT("Could not append body to list of bodies\n")
-    return state.body_list->len -1;	    
+	ERROR_EXIT("Could not append body to list of bodies\n");
+    size_t index = state.body_list->len -1; 
+    
+    return index;	    
 };
 
 
@@ -179,23 +186,23 @@ broadPhaseResolve(void) {
     
 // build spatial hash for all active bodies
     int spacing = SPATIAL_HASH_SPACING;
-    int maximum_number_of_objects  = (int)state.body_list->len;
-    if((maximum_number_of_objects) == 0) return;
+    int number_of_objects  = (int)state.body_list->len;
+    if((number_of_objects) == 0) return;
 
-    struct SpatialHash* sh = spatialHashCreate(spacing, maximum_number_of_objects);
+    struct SpatialHash* sh = spatialHashCreate(spacing, number_of_objects);
 
     spatialHashBuildAABB(sh);
 
     struct Array_List* candidates = arrayListCreate(sizeof(struct Body*), 0);
     
-    for (size_t i = 0; i < state.body_list->len; i++) {
+    for (int i = 0; i < state.body_list->len; i++) {
         struct Body* body = physicsGetBody(i);
         if (body->active)
 	{//ignore if the body isnt active
 	    //will get deleted after
 
 	    //query nearby bodies
-	    spatialHashQuery(sh, body, (int)i);
+	    spatialHashQuery(sh,body,i,body->aabb.dims[0]*2);
 	    arrayListClear(candidates);
 	    //add all bodies that are within this body cell
 	    //(TODO:) also reminder to add a check later to see if they are within the same collisoin grp

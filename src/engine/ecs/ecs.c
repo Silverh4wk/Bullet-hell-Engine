@@ -72,11 +72,11 @@ void entityBuild( Entity entity, ShapeType shape_t, int t_physics )
 	
 	if( shape_t == SHAPE_QUAD )
 	{
-	    shape_union = shapeQuadCreate(pos,size,&color,0,t_physics); // physics remain off unless u decide to add a physical body
+	    shape_union = shapeQuadCreate(pos,size,&color,0,t_physics); 
 	}
 	else if ( shape_t == SHAPE_CIRCLE )
 	{
-	    shape_union = shapeCircleCreate(pos,size[0],&color,0,t_physics); // physics remain off unless u decide to add a physical body
+	    shape_union = shapeCircleCreate(pos,size[0],&color,0,t_physics);
 	}
 	struct ShapeComponent shape_component = { .shape = shape_union.shape };
 	ComponentAttach(entity, COMPONENT_SHAPE, &shape_component);

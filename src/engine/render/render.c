@@ -287,7 +287,7 @@ void renderAABB(AABB* aabb, vec4 color, int toggle) {
     mat4x4 model;
     mat4x4_identity(model);
     mat4x4_translate(model, aabb->coords[0], aabb->coords[1], 1);
-    mat4x4_scale_aniso(model, model, w, h, 0);
+    mat4x4_scale_aniso(model, model, w, h, 1.0f);
 
        glUniform1i(
         glGetUniformLocation(state.shader_default, "use_uniform_model"),
@@ -324,7 +324,8 @@ void renderAABB(AABB* aabb, vec4 color, int toggle) {
     if (toggle)
     {
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
     else 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
